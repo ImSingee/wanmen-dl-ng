@@ -31,15 +31,15 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 		return nil
 	}
 
-	courseInfo, err := apiGetWanmenCourseLectures(courseId)
+	courseLectures, err := apiGetWanmenCourseLectures(courseId)
 	if err != nil {
 		return fmt.Errorf("apiGetWanmenCourseLectures error: %v", err)
 	}
 
-	updateProgress("init", courseInfo)
+	updateProgress("init", courseLectures)
 
 	// 将原始 lectures 信息存储
-	_ = os.WriteFile(path.Join(metaDir, "lectures.json"), courseInfo.Raw, 0644)
+	_ = os.WriteFile(path.Join(metaDir, "lectures.json"), courseLectures.Raw, 0644)
 
 	wg := sync.WaitGroup{}
 
@@ -49,7 +49,7 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 	go func() {
 		defer wg.Done()
 
-		for i, chapter := range courseInfo.Chapters {
+		for i, chapter := range courseLectures.Chapters {
 			chapter.Index = i + 1
 			chapterdir := path.Join(courseDir, fmt.Sprintf("%d - %s", i+1, cleanName(chapter.Name)))
 
