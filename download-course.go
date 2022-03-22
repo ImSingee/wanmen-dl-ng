@@ -7,6 +7,7 @@ import (
 	"path"
 	"runtime"
 	"sync"
+	"time"
 )
 
 type toDownload struct {
@@ -19,6 +20,15 @@ type toDownload struct {
 type updateCourseProgressFunc func(state string, params ...interface{})
 
 func downloadCourse(courseId, courseDir string, full bool, concurrency int, updateProgress updateCourseProgressFunc) error {
+	metaDir := path.Join(courseDir, ".meta")
+	_ = os.MkdirAll(metaDir, 0755)
+
+	// 开启自动跳过
+	if isExist(path.Join(metaDir, "DONE")) || isExist(path.Join(courseDir, ".done")) {
+		updateProgress("skip")
+		return nil
+	}
+
 	courseInfo, err := apiGetWanmenCourseInfo(courseId)
 	if err != nil {
 		return fmt.Errorf("apiGetWanmenCourseInfo error: %v", err)
@@ -85,6 +95,9 @@ func downloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 	}
 
 	wg.Wait()
+
+	_ = os.WriteFile(path.Join(metaDir, "DONE"), []byte(time.Now().Format(time.RFC3339)), 0644)
+
 	return nil
 }
 

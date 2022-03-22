@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -63,4 +64,9 @@ func getMediaHeaders() http.Header {
 func urljoin(base, endpoint string) string {
 	i := strings.LastIndex(base, "/")
 	return base[:i+1] + strings.TrimPrefix(endpoint, "/")
+}
+
+func isExist(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }
