@@ -149,8 +149,9 @@ func (d *Dashboard) actionHandler(method string, params ...interface{}) {
 		d.lecturesDone++
 	case "start": // workerId, toDownload 标记某课程开始下载
 		workerId := params[0].(int)
-		//td := params[1].(*toDownload)
+		td := params[1].(*toDownload)
 		d.workers[workerId-1].status = "prepare"
+		d.workers[workerId-1].lecture = fmt.Sprintf("Ch%d/%d-%s", td.Chapter.Index, td.Lecture.Index, td.Lecture.Name)
 	case "sub": // workerId, subMethod, subParams
 		//workerId := params[0].(int)
 		subMethod := params[1].(string)
@@ -314,7 +315,7 @@ func (d *Dashboard) StatsString(maxLines int) string {
 		case "converting":
 			b.WriteString(fmt.Sprintf("* [<%d>] CONVERTING %s\n", id, stat.lecture))
 		case "quit":
-			b.WriteString(fmt.Sprintf("* [<%d>] SHUTDOWN %s\n", id, stat.lecture))
+			b.WriteString(fmt.Sprintf("* [<%d>] SHUTDOWN\n", id))
 		default: // unknown
 			b.WriteString(fmt.Sprintf("* [<%d>] UNKNOWN %s %s\n", id, stat.status, stat.lecture))
 		}

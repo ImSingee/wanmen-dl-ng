@@ -185,6 +185,7 @@ type CourseInfo struct {
 type CourseInfo_Chapters []*CourseInfo_Chapter
 
 type CourseInfo_Chapter struct {
+	Index    int                   // 由外部赋值, base-1
 	ID       string                `json:"_id"`
 	Courseid string                `json:"courseId"`
 	Name     string                `json:"name"`
@@ -194,6 +195,7 @@ type CourseInfo_Chapter struct {
 }
 
 type CourseInfo_Lecture struct {
+	Index         int     // 由外部赋值, base-1
 	ID            string  `json:"_id"`
 	Name          string  `json:"name"`
 	ParentId      string  `json:"parentId"`

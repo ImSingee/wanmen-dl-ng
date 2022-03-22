@@ -50,9 +50,11 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 		defer wg.Done()
 
 		for i, chapter := range courseInfo.Chapters {
+			chapter.Index = i + 1
 			chapterdir := path.Join(courseDir, fmt.Sprintf("%d - %s", i+1, cleanName(chapter.Name)))
 
 			for j, lecture := range chapter.Children {
+				lecture.Index = j + 1
 				queue <- &toDownload{
 					MetaDir:     metaDir,
 					Chapter:     chapter,
