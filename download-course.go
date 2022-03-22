@@ -42,7 +42,7 @@ func downloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 					Chapter:     chapter,
 					ChapterDir:  chapterdir,
 					Lecture:     lecture,
-					LecturePath: path.Join(chapterdir, fmt.Sprintf("%d - %s", j+1, cleanName(lecture.Name))),
+					LecturePath: path.Join(chapterdir, fmt.Sprintf("%d - %s.mp4", j+1, cleanName(lecture.Name))),
 				}
 			}
 		}
@@ -62,29 +62,29 @@ func downloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 			defer wg.Done()
 
 			for {
-				select {
-				case toDownload := <-queue: // 从队列中取出一个下载任务
-					updateProgress("start", workerId, toDownload)
-
-					f := func(a string, v ...interface{}) {
-						updateProgress("sub", workerId, a, v)
-					}
-
-					_, err := downloadLecture(toDownload.Lecture.ID, toDownload.LecturePath, full, f)
-					if err != nil {
-						updateProgress("error", workerId, toDownload, err)
-						continue
-					}
-
-					updateProgress("done", workerId, toDownload)
-				default:
-					return
+				toDownload, ok := <-queue // 从队列中取出一个下载任务
+				if !ok {
+					break
 				}
+
+				updateProgress("start", workerId, toDownload)
+
+				f := func(a string, v ...interface{}) {
+					updateProgress("sub", workerId, a, v)
+				}
+
+				_, err := downloadLecture(toDownload.Lecture.ID, toDownload.LecturePath, full, f)
+				if err != nil {
+					updateProgress("error", workerId, toDownload, err)
+					continue
+				}
+
+				updateProgress("done", workerId, toDownload)
 			}
 		}(i + 1)
 	}
 
-	wg.Done()
+	wg.Wait()
 	return nil
 }
 
