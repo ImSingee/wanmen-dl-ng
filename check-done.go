@@ -17,33 +17,38 @@ var cmdCheck = &cobra.Command{
 
 		return nil
 	},
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Run: func(cmd *cobra.Command, args []string) {
 		courseId := args[0]
-		courseName, ok := GetName(courseId)
-
-		if !ok {
-			fmt.Printf("%-30s %-10s    %s\n", courseId, "PREPARE", "UNKNOWN")
-			return nil
-		}
-
-		d := path.Join(config.DownloadTo, courseName)
-
-		f1 := path.Join(d, ".done")
-		f2 := path.Join(d, ".meta", "DONE")
-
-		if isExist(f1) || isExist(f2) {
-			fmt.Printf("%-30s %-10s %s\n", courseId, "DONE", courseName)
-			return nil
-		}
-
-		if isExist(d) {
-			fmt.Printf("%-30s %-10s %s\n", courseId, "DOWNLOADING", courseName)
-			return nil
-		}
-
-		fmt.Printf("%-30s %-10s %s\n", courseId, "PREPARE", courseName)
-		return nil
+		checkDone(courseId)
 	},
+}
+
+func checkDone(courseId string) {
+	courseName, ok := GetName(courseId)
+
+	const tmpl = "%-30s %-10s    %s\n"
+
+	if !ok {
+		fmt.Printf(tmpl, courseId, "PREPARE", "UNKNOWN")
+		return
+	}
+
+	d := path.Join(config.DownloadTo, courseName)
+
+	f1 := path.Join(d, ".done")
+	f2 := path.Join(d, ".meta", "DONE")
+
+	if isExist(f1) || isExist(f2) {
+		fmt.Printf(tmpl, courseId, "DONE", courseName)
+		return
+	}
+
+	if isExist(d) {
+		fmt.Printf(tmpl, courseId, "DOWNLOADING", courseName)
+		return
+	}
+
+	fmt.Printf(tmpl, courseId, "PREPARE", courseName)
 }
 
 func init() {
