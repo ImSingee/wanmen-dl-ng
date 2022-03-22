@@ -25,27 +25,31 @@ var cmdDownload = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		courseId := args[0]
-		courseName, ok := GetName(courseId)
-		if !ok {
-			return errors.New("unknown course, please register first")
-		}
-
-		dashboard := NewDashboard(courseId, courseName, flagConcurrency)
-
-		actionHandler := dashboard.Start()
-		defer dashboard.Close()
-
-		downloadTo := flagDownloadTo
-		if downloadTo == "" {
-			downloadTo = path.Join(config.DownloadTo, courseName)
-		}
-
-		updateProgress := func(state string, params ...interface{}) {
-			actionHandler <- DashboardAction{state, params}
-		}
-
-		return DownloadCourse(courseId, downloadTo, flagFull, flagConcurrency, updateProgress)
+		return download(courseId, flagDownloadTo, flagFull, flagConcurrency)
 	},
+}
+
+func download(courseId string, downloadTo string, full bool, concurrency int) error {
+
+	courseName, ok := GetName(courseId)
+	if !ok {
+		return errors.New("unknown course, please register first")
+	}
+
+	dashboard := NewDashboard(courseId, courseName, concurrency)
+
+	actionHandler := dashboard.Start()
+	defer dashboard.Close()
+
+	if downloadTo == "" {
+		downloadTo = path.Join(config.DownloadTo, courseName)
+	}
+
+	updateProgress := func(state string, params ...interface{}) {
+		actionHandler <- DashboardAction{state, params}
+	}
+
+	return DownloadCourse(courseId, downloadTo, full, concurrency, updateProgress)
 }
 
 func init() {
