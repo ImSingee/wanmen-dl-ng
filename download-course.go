@@ -11,6 +11,7 @@ import (
 )
 
 type toDownload struct {
+	MetaDir         string
 	Chapter         *CourseInfo_Chapter
 	ChapterDir      string
 	Lecture         *CourseInfo_Lecture
@@ -37,6 +38,9 @@ func downloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 
 	updateProgress("fetch_course_info", courseInfo)
 
+	// 将原始 lectures 信息存储
+	_ = os.WriteFile(path.Join(metaDir, "lectures.json"), courseInfo.Raw, 0644)
+
 	wg := sync.WaitGroup{}
 
 	// 生成下载队列
@@ -45,11 +49,12 @@ func downloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 	go func() {
 		defer wg.Done()
 
-		for i, chapter := range courseInfo {
+		for i, chapter := range courseInfo.Chapters {
 			chapterdir := path.Join(courseDir, fmt.Sprintf("%d - %s", i+1, cleanName(chapter.Name)))
 
 			for j, lecture := range chapter.Children {
 				queue <- &toDownload{
+					MetaDir:     metaDir,
 					Chapter:     chapter,
 					ChapterDir:  chapterdir,
 					Lecture:     lecture,
@@ -85,11 +90,13 @@ func downloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 					continue
 				}
 
+				metaPath := path.Join(metaDir, fmt.Sprintf("%s:%s.json", toDownload.Chapter.ID, toDownload.Lecture.ID))
+
 				f := func(a string, v ...interface{}) {
 					updateProgress("sub", workerId, a, v)
 				}
 
-				_, err := downloadLecture(toDownload.Lecture.ID, toDownload.LecturePath, full, f)
+				_, err := downloadLecture(toDownload.Lecture.ID, toDownload.LecturePath, metaPath, full, f)
 				if err != nil {
 					updateProgress("error", workerId, toDownload, err)
 					continue
@@ -114,13 +121,14 @@ type updateLectureProgressFunc func(state string, params ...interface{})
 // f 用来返回当前的下载进度
 // 返回值的第一个参数代表下载状况，0 代表正常，1-4 代表下载到了非超清版本，-1 代表无法下载
 // 当且仅当第一个返回值为 -1 时，会带有 error 参数
-func downloadLecture(lectureID string, lecturePath string, full bool, f updateLectureProgressFunc) (int, error) {
+func downloadLecture(lectureID string, lecturePath string, metaPath string, full bool, f updateLectureProgressFunc) (int, error) {
 	info, err := apiGetWanmenLectureInfo(lectureID)
 	if err != nil {
 		return -1, fmt.Errorf("cannot get lecture info: %v", err)
 	}
 
 	_ = os.MkdirAll(path.Dir(lecturePath), 0755)
+	_ = os.WriteFile(metaPath, info.RawJsonBody, 0644)
 
 	target := lecturePath
 

@@ -177,7 +177,12 @@ func tryGetHls(v interface{}) *VideoStream {
 	}
 }
 
-type CourseInfo []*CourseInfo_Chapter
+type CourseInfo struct {
+	Chapters CourseInfo_Chapters
+	Raw      []byte
+}
+
+type CourseInfo_Chapters []*CourseInfo_Chapter
 
 type CourseInfo_Chapter struct {
 	ID       string                `json:"_id"`
@@ -205,7 +210,7 @@ type CourseInfo_Lecture struct {
 	} `json:"videoSize"`
 }
 
-func apiGetWanmenCourseInfo(courseId string) (CourseInfo, error) {
+func apiGetWanmenCourseInfo(courseId string) (*CourseInfo, error) {
 	url := fmt.Sprintf("https://api.wanmen.org/4.0/content/lectures?courseId=%s&debug=1", courseId)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -225,12 +230,15 @@ func apiGetWanmenCourseInfo(courseId string) (CourseInfo, error) {
 		return nil, fmt.Errorf("cannot request course info api (read body): %w", err)
 	}
 
-	var courseInfo CourseInfo
+	var courseInfo CourseInfo_Chapters
 
 	err = json.Unmarshal(body, &courseInfo)
 	if err != nil {
 		return nil, fmt.Errorf("cannot request course info api (unmarshal json): %w", err)
 	}
 
-	return courseInfo, nil
+	return &CourseInfo{
+		Chapters: courseInfo,
+		Raw:      body,
+	}, nil
 }

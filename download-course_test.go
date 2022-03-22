@@ -17,12 +17,13 @@ func TestDownloadCourse(t *testing.T) {
 
 func TestDownloadLecture(t *testing.T) {
 	target := "/tmp/wanmen-dl-ng-test-download-m3u8.mp4"
+	metaPath := "/tmp/wanmen-dl-ng-test-download-m3u8-meta.json"
 
 	updateProgress := func(state string, params ...interface{}) {
 		fmt.Printf("%v %v\n", state, params)
 	}
 
-	code, err := downloadLecture("5aded0c1b6917f44d5121710", target, false, updateProgress)
+	code, err := downloadLecture("5aded0c1b6917f44d5121710", target, metaPath, false, updateProgress)
 	tt.AssertIsNotError(t, err)
 	tt.AssertEqual(t, code, 0)
 }
