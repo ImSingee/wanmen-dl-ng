@@ -26,7 +26,7 @@ var cmdCheck = &cobra.Command{
 func checkDone(courseId string) {
 	courseName, ok := GetName(courseId)
 
-	const tmpl = "%-30s %-10s    %s\n"
+	const tmpl = "%-30s %-12s    %s\n"
 
 	if !ok {
 		fmt.Printf(tmpl, courseId, "PREPARE", "UNKNOWN")
