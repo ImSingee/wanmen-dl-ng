@@ -35,14 +35,14 @@ func downloadDoc(docInfo *CourseInfo_Document, saveTo string, metaPrefix string,
 	defer f.Close()
 
 	_, err = httpRequestWithAutoRetryAndCustomHandleResponse(req, func(response *http.Response) error {
-		updateProgress("downloading", 0, response.ContentLength)
+		updateProgress("downloading", 0, int(response.ContentLength))
 
 		_, err := io.Copy(f, response.Body)
 		if err != nil { // reset file
 			f.Truncate(0)
 			f.Seek(0, 0)
 		} else {
-			updateProgress("downloading", response.ContentLength, response.ContentLength)
+			updateProgress("downloading", int(response.ContentLength), int(response.ContentLength))
 		}
 		return err
 	})
