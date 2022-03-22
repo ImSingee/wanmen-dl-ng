@@ -144,17 +144,17 @@ func (d *Dashboard) actionHandler(method string, params ...interface{}) {
 	case "skip":
 		// 整个课程被跳过
 		d.logCh <- LogMessage{Level: LogLevelInfo, Message: "Course already saved, auto skip (You can delete .meta/DONE to re-download the course)"}
-	case "skip-lecture": //workerId, toDownload
+	case "skip-lecture": //workerId, DownloadTask
 		// 单节课程被跳过
 		d.lecturesDone++
-	case "start": // workerId, toDownload 标记某课程开始下载
+	case "start": // workerId, DownloadTask 标记某课程开始下载
 		workerId := params[0].(int)
-		td := params[1].(*toDownload)
+		td := params[1].(*DownloadTask)
 		d.workers[workerId-1].status = "prepare"
 		d.workers[workerId-1].lecture = fmt.Sprintf("Ch%d/%d-%s", td.Chapter.Index, td.Lecture.Index, td.Lecture.Name)
 	case "lecture": // workerId, task,  subMethod, subParams
 		workerId := params[0].(int)
-		//task := params[1].(*toDownload)
+		//task := params[1].(*DownloadTask)
 		subMethod := params[2].(string)
 		subParams := params[3].([]interface{})
 
@@ -187,12 +187,12 @@ func (d *Dashboard) actionHandler(method string, params ...interface{}) {
 
 	case "done": // workerId, task
 		workerId := params[0].(int)
-		// td := params[1].(*toDownload)
+		// td := params[1].(*DownloadTask)
 		d.workers[workerId-1].status = "done"
 		d.lecturesDone++
-	case "error": // workerId, toDownload, err
+	case "error": // workerId, DownloadTask, err
 		workerId := params[0].(int)
-		td := params[1].(*toDownload)
+		td := params[1].(*DownloadTask)
 		err := params[2].(error)
 
 		d.errorsCount++

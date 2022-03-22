@@ -10,15 +10,6 @@ import (
 	"time"
 )
 
-type toDownload struct {
-	MetaDir         string
-	Chapter         *CourseInfo_Chapter
-	ChapterDir      string
-	Lecture         *CourseInfo_Lecture
-	LecturePath     string
-	ForceReDownload bool
-}
-
 type updateCourseProgressFunc func(state string, params ...interface{})
 
 func DownloadCourse(courseId, courseDir string, full bool, concurrency int, updateProgress updateCourseProgressFunc) error {
@@ -44,7 +35,7 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 	wg := sync.WaitGroup{}
 
 	// 生成下载队列
-	queue := make(chan *toDownload, 64)
+	queue := make(chan *DownloadTask, 64)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -55,7 +46,7 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 
 			for j, lecture := range chapter.Children {
 				lecture.Index = j + 1
-				queue <- &toDownload{
+				queue <- &DownloadTask{
 					MetaDir:     metaDir,
 					Chapter:     chapter,
 					ChapterDir:  chapterdir,
