@@ -17,3 +17,8 @@ func TestGetWanmenLectureInfo(t *testing.T) {
 	tt.AssertNotEqual(t, info.VideoStream.MobileLow, "")
 	tt.AssertNotEqual(t, len(info.RawJsonBody), 0)
 }
+
+func TestGetWanmenCourseInfo(t *testing.T) {
+	_, err := apiGetWanmenCourseInfo("59df20a60dcf357a8bc0000c", "", "")
+	tt.AssertIsNotError(t, err)
+}
