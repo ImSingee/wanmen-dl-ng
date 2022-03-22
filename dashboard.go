@@ -144,14 +144,14 @@ func (d *Dashboard) actionHandler(method string, params ...interface{}) {
 	case "skip":
 		// 整个课程被跳过
 		d.logCh <- LogMessage{Level: LogLevelInfo, Message: "Course already saved, auto skip (You can delete .meta/DONE to re-download the course)"}
-	case "skip-lecture": //workerId, DownloadTask
+	case "skip-task": // workerId, DownloadTask
 		// 单节课程被跳过
 		d.lecturesDone++
 	case "start": // workerId, DownloadTask 标记某课程开始下载
 		workerId := params[0].(int)
-		td := params[1].(*DownloadTask)
+		task := params[1].(*DownloadTask)
 		d.workers[workerId-1].status = "prepare"
-		d.workers[workerId-1].lecture = fmt.Sprintf("Ch%d/%d-%s", td.Chapter.Index, td.Lecture.Index, td.Lecture.Name)
+		d.workers[workerId-1].lecture = task.Desc()
 	case "lecture": // workerId, task,  subMethod, subParams
 		workerId := params[0].(int)
 		//task := params[1].(*DownloadTask)
@@ -196,7 +196,7 @@ func (d *Dashboard) actionHandler(method string, params ...interface{}) {
 		err := params[2].(error)
 
 		d.errorsCount++
-		d.logCh <- LogMessage{Level: LogLevelError, Message: fmt.Sprintf("%v (%v, %v)", err, workerId, td.LecturePath)}
+		d.logCh <- LogMessage{Level: LogLevelError, Message: fmt.Sprintf("%v (%v, %v)", err, workerId, td.Path())}
 		d.workers[workerId-1].status = "error"
 		d.lecturesDone++
 	case "quit": // workerId

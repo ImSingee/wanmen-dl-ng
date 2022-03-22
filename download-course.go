@@ -47,11 +47,13 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 			for j, lecture := range chapter.Children {
 				lecture.Index = j + 1
 				queue <- &DownloadTask{
-					MetaDir:     metaDir,
-					Chapter:     chapter,
-					ChapterDir:  chapterdir,
-					Lecture:     lecture,
-					LecturePath: path.Join(chapterdir, fmt.Sprintf("%d-%d %s.mp4", i+1, j+1, cleanName(lecture.Name))),
+					MetaDir: metaDir,
+					Course: &CourseDownloadTask{
+						Chapter:     chapter,
+						ChapterDir:  chapterdir,
+						Lecture:     lecture,
+						LecturePath: path.Join(chapterdir, fmt.Sprintf("%d-%d %s.mp4", i+1, j+1, cleanName(lecture.Name))),
+					},
 				}
 			}
 		}
@@ -79,21 +81,23 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 
 				updateProgress("start", workerId, task)
 
-				if !task.ForceReDownload && isExist(task.LecturePath) {
-					updateProgress("skip-lecture", workerId, task)
+				if !task.ForceReDownload && isExist(task.Path()) {
+					updateProgress("skip-task", workerId, task)
 					continue
 				}
 
-				metaPath := path.Join(metaDir, fmt.Sprintf("%s:%s.json", task.Chapter.ID, task.Lecture.ID))
+				if task.Course != nil {
+					f := func(a string, v ...interface{}) {
+						updateProgress("lecture", workerId, task, a, v)
+					}
 
-				f := func(a string, v ...interface{}) {
-					updateProgress("lecture", workerId, task, a, v)
-				}
-
-				_, err := downloadLecture(task.Lecture.ID, task.LecturePath, metaPath, full, f)
-				if err != nil {
-					updateProgress("error", workerId, task, err)
-					continue
+					_, err := downloadLecture(task.Course.Lecture.ID, task.Path(), task.MetaPrefix(), full, f)
+					if err != nil {
+						updateProgress("error", workerId, task, err)
+						continue
+					}
+				} else { // task.Doc
+					// TODO
 				}
 
 				updateProgress("done", workerId, task)
