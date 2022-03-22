@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
@@ -38,7 +39,13 @@ var cmdRegister = &cobra.Command{
 			return fmt.Errorf("cannot marshal config: %v", err)
 		}
 
-		err = os.WriteFile("config.json", p, 0644)
+		var buf bytes.Buffer
+		err = json.Indent(&buf, p, "", "  ")
+		if err != nil {
+			return fmt.Errorf("cannot indent config json: %v", err)
+		}
+
+		err = os.WriteFile("config.json", buf.Bytes(), 0644)
 		if err != nil {
 			return fmt.Errorf("cannot write config: %v", err)
 		}
