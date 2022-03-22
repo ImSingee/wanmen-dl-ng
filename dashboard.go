@@ -180,7 +180,7 @@ func (d *Dashboard) actionHandler(method string, params ...interface{}) {
 			times := subParams[0].(int)
 			err := subParams[1].(error)
 
-			d.logCh <- LogMessage{Level: LogLevelWarning, Message: fmt.Sprintf("Download %s fail, retry (%d times): %v", d.workers[workerId-1].lecture, times, err)}
+			d.logCh <- LogMessage{Level: LogLevelWarning, Message: fmt.Sprintf("Download %s fail, retry lower level (level %d fail): %v", d.workers[workerId-1].lecture, times, err)}
 		default:
 			d.logCh <- LogMessage{Level: LogLevelDebug, Message: fmt.Sprintf("Unknown sub method: %s", subMethod)}
 		}
