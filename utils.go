@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -69,4 +70,24 @@ func urljoin(base, endpoint string) string {
 func isExist(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
+}
+
+func appendFile(path string, content string) error {
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(strings.TrimSpace(content) + "\n")
+	return err
+}
+
+func appendJSON(path string, content map[string]interface{}) error {
+	data, err := json.Marshal(content)
+	if err != nil {
+		return err
+	}
+
+	return appendFile(path, string(data))
 }

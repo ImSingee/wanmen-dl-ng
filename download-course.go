@@ -141,13 +141,26 @@ func downloadLecture(lectureID string, lecturePath string, metaPrefix string, fu
 		if err == nil {
 			return i, nil
 		}
+
 		f("retry", i, err)
+		_ = appendJSON(metaPrefix+".error.jsonl", map[string]interface{}{
+			"op":   "retry",
+			"mode": i,
+			"url":  url,
+			"err":  err,
+		})
 		latestError = err
 	}
 
 	if latestError == nil {
-		return -1, errors.New("no url can be downloaded")
-	} else {
-		return -1, latestError
+		latestError = errors.New("no url can be downloaded")
 	}
+
+	_ = appendJSON(metaPrefix+".error.jsonl", map[string]interface{}{
+		"op":  "fail",
+		"err": latestError,
+	})
+
+	return -1, latestError
+
 }
