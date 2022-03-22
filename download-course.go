@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
@@ -68,6 +69,10 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 
 		for i, doc := range courseDocuments {
 			doc.Index = i + 1
+
+			// 万门的某些课程 ext 会出现两次
+			doc.Name = strings.TrimSuffix(doc.Name, "."+doc.Ext)
+
 			queue <- &DownloadTask{
 				MetaDir: metaDir,
 				Doc: &DocDownloadTask{
