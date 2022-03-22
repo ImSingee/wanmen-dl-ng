@@ -152,7 +152,7 @@ func (d *Dashboard) actionHandler(method string, params ...interface{}) {
 		td := params[1].(*toDownload)
 		d.workers[workerId-1].status = "prepare"
 		d.workers[workerId-1].lecture = fmt.Sprintf("Ch%d/%d-%s", td.Chapter.Index, td.Lecture.Index, td.Lecture.Name)
-	case "sub": // workerId, task,  subMethod, subParams
+	case "lecture": // workerId, task,  subMethod, subParams
 		workerId := params[0].(int)
 		//task := params[1].(*toDownload)
 		subMethod := params[2].(string)

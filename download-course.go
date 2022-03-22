@@ -96,7 +96,7 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 				metaPath := path.Join(metaDir, fmt.Sprintf("%s:%s.json", task.Chapter.ID, task.Lecture.ID))
 
 				f := func(a string, v ...interface{}) {
-					updateProgress("sub", workerId, task, a, v)
+					updateProgress("lecture", workerId, task, a, v)
 				}
 
 				_, err := downloadLecture(task.Lecture.ID, task.LecturePath, metaPath, full, f)
