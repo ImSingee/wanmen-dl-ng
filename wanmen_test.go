@@ -19,6 +19,6 @@ func TestGetWanmenLectureInfo(t *testing.T) {
 }
 
 func TestGetWanmenCourseInfo(t *testing.T) {
-	_, err := apiGetWanmenCourseInfo("59df20a60dcf357a8bc0000c", "", "")
+	_, err := apiGetWanmenCourseInfo("59df20a60dcf357a8bc0000c")
 	tt.AssertIsNotError(t, err)
 }
