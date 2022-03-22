@@ -21,7 +21,7 @@ type toDownload struct {
 
 type updateCourseProgressFunc func(state string, params ...interface{})
 
-func downloadCourse(courseId, courseDir string, full bool, concurrency int, updateProgress updateCourseProgressFunc) error {
+func DownloadCourse(courseId, courseDir string, full bool, concurrency int, updateProgress updateCourseProgressFunc) error {
 	metaDir := path.Join(courseDir, ".meta")
 	_ = os.MkdirAll(metaDir, 0755)
 
@@ -36,7 +36,7 @@ func downloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 		return fmt.Errorf("apiGetWanmenCourseInfo error: %v", err)
 	}
 
-	updateProgress("fetch_course_info", courseInfo)
+	updateProgress("init", courseInfo)
 
 	// 将原始 lectures 信息存储
 	_ = os.WriteFile(path.Join(metaDir, "lectures.json"), courseInfo.Raw, 0644)
@@ -76,6 +76,7 @@ func downloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 	for i := 0; i < concurrency; i++ {
 		go func(workerId int) {
 			defer wg.Done()
+			defer updateProgress("quit", workerId)
 
 			for {
 				toDownload, ok := <-queue // 从队列中取出一个下载任务
@@ -86,7 +87,7 @@ func downloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 				updateProgress("start", workerId, toDownload)
 
 				if !toDownload.ForceReDownload && isExist(toDownload.LecturePath) {
-					updateProgress("skip", workerId, toDownload)
+					updateProgress("skip-lecture", workerId, toDownload)
 					continue
 				}
 
