@@ -60,7 +60,7 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 					Chapter:     chapter,
 					ChapterDir:  chapterdir,
 					Lecture:     lecture,
-					LecturePath: path.Join(chapterdir, fmt.Sprintf("%d - %s.mp4", j+1, cleanName(lecture.Name))),
+					LecturePath: path.Join(chapterdir, fmt.Sprintf("%d-%d %s.mp4", i+1, j+1, cleanName(lecture.Name))),
 				}
 			}
 		}
