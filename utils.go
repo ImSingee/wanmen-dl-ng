@@ -52,3 +52,15 @@ func getHeaders() http.Header {
 		"x-token":       []string{token},
 	}
 }
+
+func getMediaHeaders() http.Header {
+	return http.Header{
+		"User-Agent": []string{config.UserAgent},
+		"Referer":    []string{"https://www.wanmen.org/"},
+	}
+}
+
+func urljoin(base, endpoint string) string {
+	i := strings.LastIndex(base, "/")
+	return base[:i+1] + strings.TrimPrefix(endpoint, "/")
+}

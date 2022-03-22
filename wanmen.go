@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -13,14 +14,13 @@ var client = http.DefaultClient
 
 // 自动重试，暂不考虑 body
 func httpRequestWithAutoRetry(request *http.Request) (*http.Response, error) {
-	// 最多重试 3 次
+	// 最多重试 5 次
 	var latestErr error
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ {
 		response, err := client.Do(request.Clone(context.Background()))
 		if err != nil {
 			// 可重试错误
 			latestErr = err
-			_ = response.Body.Close()
 			continue
 		}
 
@@ -34,6 +34,15 @@ func httpRequestWithAutoRetry(request *http.Request) (*http.Response, error) {
 		}
 
 		if response.StatusCode >= 200 && response.StatusCode < 400 { // 成功
+			// 先行读取 response body
+			body, err := io.ReadAll(response.Body)
+			if err != nil {
+				response.Body.Close()
+				latestErr = fmt.Errorf("cannot read response body: %v", err)
+				continue
+			}
+			response.Body = io.NopCloser(bytes.NewReader(body))
+
 			return response, nil
 		}
 
@@ -113,6 +122,28 @@ type VideoStream struct {
 	MobileLow string `json:"mobileLow"`
 }
 
+func (vs *VideoStream) ToDownload() []string {
+	target := make([]string, 0, 5)
+
+	if v := vs.PcHigh; v != "" {
+		target = append(target, v)
+	}
+	if v := vs.PcMid; v != "" {
+		target = append(target, v)
+	}
+	if v := vs.MobileMid; v != "" {
+		target = append(target, v)
+	}
+	if v := vs.PcLow; v != "" {
+		target = append(target, v)
+	}
+	if v := vs.MobileLow; v != "" {
+		target = append(target, v)
+	}
+
+	return target
+}
+
 func tryGetHls(v interface{}) *VideoStream {
 	// v: {"hls": { ... }}
 	m, ok := v.(map[string]interface{})
@@ -129,8 +160,6 @@ func tryGetHls(v interface{}) *VideoStream {
 	if !ok {
 		return nil
 	}
-
-	fmt.Printf("%+v\n", hlsM)
 
 	pcHigh, _ := hlsM["pcHigh"].(string)
 	pcMid, _ := hlsM["pcMid"].(string)
