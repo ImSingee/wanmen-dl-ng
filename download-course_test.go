@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestDownloadM3U8(t *testing.T) {
+func TestDownloadLecture(t *testing.T) {
 	info, err := apiGetWanmenLectureInfo("5aded0c1b6917f44d5121710")
 	tt.AssertIsNotError(t, err)
 
@@ -16,7 +16,7 @@ func TestDownloadM3U8(t *testing.T) {
 		fmt.Printf("%v %v\n", state, params)
 	}
 
-	code, err := downloadLectureM3U8(info, target, false, updateProgress)
+	code, err := downloadLecture(info, target, false, updateProgress)
 	tt.AssertIsNotError(t, err)
 	tt.AssertEqual(t, code, 0)
 }
