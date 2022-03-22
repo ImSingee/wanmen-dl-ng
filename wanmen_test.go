@@ -13,5 +13,7 @@ func TestGetWanmenLectureInfo(t *testing.T) {
 	tt.AssertNotEqual(t, info.VideoStream.PcHigh, "")
 	tt.AssertNotEqual(t, info.VideoStream.PcMid, "")
 	tt.AssertNotEqual(t, info.VideoStream.PcLow, "")
+	tt.AssertNotEqual(t, info.VideoStream.MobileMid, "")
+	tt.AssertNotEqual(t, info.VideoStream.MobileLow, "")
 	tt.AssertNotEqual(t, len(info.RawJsonBody), 0)
 }

@@ -106,9 +106,11 @@ func apiGetWanmenLectureInfo(lectureId string) (*LectureInfo, error) {
 }
 
 type VideoStream struct {
-	PcHigh string `json:"pcHigh"`
-	PcMid  string `json:"pcMid"`
-	PcLow  string `json:"pcLow"`
+	PcHigh    string `json:"pcHigh"`
+	PcMid     string `json:"pcMid"`
+	PcLow     string `json:"pcLow"`
+	MobileMid string `json:"mobileMid"`
+	MobileLow string `json:"mobileLow"`
 }
 
 func tryGetHls(v interface{}) *VideoStream {
@@ -128,13 +130,19 @@ func tryGetHls(v interface{}) *VideoStream {
 		return nil
 	}
 
+	fmt.Printf("%+v\n", hlsM)
+
 	pcHigh, _ := hlsM["pcHigh"].(string)
 	pcMid, _ := hlsM["pcMid"].(string)
 	pcLow, _ := hlsM["pcLow"].(string)
+	mobileMid, _ := hlsM["mobileMid"].(string)
+	mobileLow, _ := hlsM["mobileLow"].(string)
 
 	return &VideoStream{
-		PcHigh: pcHigh,
-		PcMid:  pcMid,
-		PcLow:  pcLow,
+		PcHigh:    pcHigh,
+		PcMid:     pcMid,
+		PcLow:     pcLow,
+		MobileMid: mobileMid,
+		MobileLow: mobileLow,
 	}
 }
