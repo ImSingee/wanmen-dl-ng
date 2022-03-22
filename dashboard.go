@@ -12,10 +12,13 @@ type Dashboard struct {
 	courseID   string
 	courseName string
 
-	chaptersDone  int
-	chaptersTotal int
+	//chaptersDone  int
+	//chaptersTotal int
 	lecturesDone  int
 	lecturesTotal int
+
+	documentsDone  int
+	documentsTotal int
 
 	errorsCount int64
 
@@ -32,9 +35,9 @@ type Dashboard struct {
 }
 
 type workerStat struct {
-	id      int
-	lecture string
-	status  string // 当前的状态，可能为 空 / prepare / downloading / converting / error / done / quit
+	id     int
+	desc   string
+	status string // 当前的状态，可能为 空 / prepare / downloading / converting / error / done / quit
 	// 下面两个状态只有 downloading 有意义
 	done  int
 	total int
@@ -133,26 +136,36 @@ func (d *Dashboard) Close() {
 
 func (d *Dashboard) actionHandler(method string, params ...interface{}) {
 	switch method {
-	case "init": // courseInfo
+	case "init-lectures": // courseInfo
 		info := params[0].(*CourseLectures)
-		d.chaptersTotal = len(info.Chapters)
+		//d.chaptersTotal = len(info.Chapters)
 		c := 0
 		for _, chapter := range info.Chapters {
 			c += len(chapter.Children)
 		}
 		d.lecturesTotal = c
+	case "init-documents": // []*CourseInfo_Document
+		documents := params[0].([]*CourseInfo_Document)
+		d.documentsTotal = len(documents)
 	case "skip":
 		// 整个课程被跳过
 		d.logCh <- LogMessage{Level: LogLevelInfo, Message: "Course already saved, auto skip (You can delete .meta/DONE to re-download the course)"}
 	case "skip-task": // workerId, DownloadTask
-		// 单节课程被跳过
-		d.lecturesDone++
-	case "start": // workerId, DownloadTask 标记某课程开始下载
+		// 单个任务被跳过
+		task := params[1].(*DownloadTask)
+		if task.Course != nil {
+			d.lecturesDone++
+		} else {
+			d.documentsDone++
+		}
+	case "start": // workerId, DownloadTask
+		// 任务开始
 		workerId := params[0].(int)
 		task := params[1].(*DownloadTask)
 		d.workers[workerId-1].status = "prepare"
-		d.workers[workerId-1].lecture = task.Desc()
+		d.workers[workerId-1].desc = task.Desc()
 	case "lecture": // workerId, task,  subMethod, subParams
+		// 课程任务下载进度汇报
 		workerId := params[0].(int)
 		//task := params[1].(*DownloadTask)
 		subMethod := params[2].(string)
@@ -171,7 +184,7 @@ func (d *Dashboard) actionHandler(method string, params ...interface{}) {
 		case "ffmpeg_error": // output
 			ffmpegOutput := subParams[0].(string)
 
-			d.logCh <- LogMessage{Level: LogLevelError, Message: fmt.Sprintf("ffmpeg error on %s: %s", d.workers[workerId-1].lecture, ffmpegOutput)}
+			d.logCh <- LogMessage{Level: LogLevelError, Message: fmt.Sprintf("ffmpeg error on %s: %s", d.workers[workerId-1].desc, ffmpegOutput)}
 
 			d.workers[workerId-1].status = "error"
 		case "ffmpeg_done":
@@ -180,17 +193,35 @@ func (d *Dashboard) actionHandler(method string, params ...interface{}) {
 			times := subParams[0].(int)
 			err := subParams[1].(error)
 
-			d.logCh <- LogMessage{Level: LogLevelWarning, Message: fmt.Sprintf("Download %s fail, retry lower level (level %d fail): %v", d.workers[workerId-1].lecture, times, err)}
+			d.logCh <- LogMessage{Level: LogLevelWarning, Message: fmt.Sprintf("Download %s fail, retry lower level (level %d fail): %v", d.workers[workerId-1].desc, times, err)}
 		default:
-			d.logCh <- LogMessage{Level: LogLevelDebug, Message: fmt.Sprintf("Unknown sub method: %s", subMethod)}
+			d.logCh <- LogMessage{Level: LogLevelDebug, Message: fmt.Sprintf("Unknown sub method %s for course", subMethod)}
 		}
+	case "doc": // workerId, task,  subMethod, subParams
+		// 文档任务下载进度汇报
+		workerId := params[0].(int)
+		//task := params[1].(*DownloadTask)
+		subMethod := params[2].(string)
+		subParams := params[3].([]interface{})
+		switch subMethod {
+		case "downloading": // i, N
+			done := subParams[0].(int)
+			total := subParams[1].(int)
 
+			d.workers[workerId-1].status = "downloading"
+			d.workers[workerId-1].done = done
+			d.workers[workerId-1].total = total
+		default:
+			d.logCh <- LogMessage{Level: LogLevelDebug, Message: fmt.Sprintf("Unknown sub method %s for doc", subMethod)}
+		}
 	case "done": // workerId, task
+		// 任务完成
 		workerId := params[0].(int)
 		// td := params[1].(*DownloadTask)
 		d.workers[workerId-1].status = "done"
 		d.lecturesDone++
 	case "error": // workerId, DownloadTask, err
+		// 任务异常
 		workerId := params[0].(int)
 		td := params[1].(*DownloadTask)
 		err := params[2].(error)
@@ -200,6 +231,7 @@ func (d *Dashboard) actionHandler(method string, params ...interface{}) {
 		d.workers[workerId-1].status = "error"
 		d.lecturesDone++
 	case "quit": // workerId
+		// worker 停止
 		workerId := params[0].(int)
 		d.workers[workerId-1].status = "quit"
 	default: // unknown method
@@ -313,9 +345,8 @@ outer:
 func (d *Dashboard) StatsString(maxLines int) string {
 	b := strings.Builder{}
 
-	//b.WriteString(fmt.Sprintf("Download: %d/%d Chapters, %d/%d Lectures\n",
-	//	d.chaptersDone, d.chaptersTotal, d.lecturesDone, d.lecturesTotal))
-	b.WriteString(fmt.Sprintf("Download: %d/%d Lectures\n", d.lecturesDone, d.lecturesTotal))
+	b.WriteString(fmt.Sprintf("Download: %d/%d Lectures %d/%d Docs\n",
+		d.lecturesDone, d.lecturesTotal, d.documentsDone, d.documentsTotal))
 	b.WriteString(fmt.Sprintf("Time: %s elaspsed\n", time.Since(d.startAt)))
 
 	if d.errorsCount != 0 {
@@ -332,15 +363,15 @@ func (d *Dashboard) StatsString(maxLines int) string {
 		case "", "error", "done":
 			b.WriteString(fmt.Sprintf("* [<%d>] LEISURE\n", id))
 		case "prepare":
-			b.WriteString(fmt.Sprintf("* [<%d>] PREPARE %s\n", id, stat.lecture))
+			b.WriteString(fmt.Sprintf("* [<%d>] PREPARE %s\n", id, stat.desc))
 		case "downloading":
-			b.WriteString(fmt.Sprintf("* [<%d>] %d/%d %s\n", id, stat.done, stat.total, stat.lecture))
+			b.WriteString(fmt.Sprintf("* [<%d>] %d/%d %s\n", id, stat.done, stat.total, stat.desc))
 		case "converting":
-			b.WriteString(fmt.Sprintf("* [<%d>] CONVERTING %s\n", id, stat.lecture))
+			b.WriteString(fmt.Sprintf("* [<%d>] CONVERTING %s\n", id, stat.desc))
 		case "quit":
 			b.WriteString(fmt.Sprintf("* [<%d>] SHUTDOWN\n", id))
 		default: // unknown
-			b.WriteString(fmt.Sprintf("* [<%d>] UNKNOWN %s %s\n", id, stat.status, stat.lecture))
+			b.WriteString(fmt.Sprintf("* [<%d>] UNKNOWN %s %s\n", id, stat.status, stat.desc))
 		}
 	}
 

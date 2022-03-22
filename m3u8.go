@@ -15,7 +15,7 @@ var ffmpegPath string
 
 // target 为下载目标的绝对路径
 // full 为 true 代表不会去除首尾万门的「广告」
-func tryDownloadLectureM3U8(url string, target string, full bool, reportProgress updateLectureProgressFunc) error {
+func tryDownloadLectureM3U8(url string, target string, full bool, reportProgress updateProgressFunc) error {
 	// 下载 m3u8 文件，返回 ts 列表
 	tsList, err := downloadAndParseM3U8(url)
 	if err != nil {

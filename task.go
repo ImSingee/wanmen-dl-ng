@@ -17,7 +17,7 @@ func (task *DownloadTask) Path() string {
 	if task.Course != nil {
 		return task.Course.LecturePath
 	} else {
-		return "" // TODO
+		return task.Doc.DocumentPath
 	}
 }
 
@@ -25,7 +25,7 @@ func (task *DownloadTask) MetaPrefix() string {
 	if task.Course != nil {
 		return path.Join(task.MetaDir, fmt.Sprintf("%s:%s", task.Course.Chapter.ID, task.Course.Lecture.ID))
 	} else {
-		return "" // TODO
+		return path.Join(task.MetaDir, fmt.Sprintf("doc:%s", task.Doc.Document.Key))
 	}
 }
 
@@ -34,7 +34,7 @@ func (task *DownloadTask) Desc() string {
 		td := task.Course
 		return fmt.Sprintf("Ch%d/%d-%s", td.Chapter.Index, td.Lecture.Index, td.Lecture.Name)
 	} else {
-		return "" // TODO
+		return fmt.Sprintf("Doc%d-%s", task.Doc.Document.Index, task.Doc.Document.Name)
 	}
 }
 
@@ -46,4 +46,6 @@ type CourseDownloadTask struct {
 }
 
 type DocDownloadTask struct {
+	Document     *CourseInfo_Document
+	DocumentPath string
 }
