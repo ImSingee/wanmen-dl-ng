@@ -354,10 +354,10 @@ func (d *Dashboard) StatsString(maxLines int) string {
 	}
 
 	// 上面使用了 3 行，留给 worker 的可用行数为 maxLines - 3
-	// 为了防止奇奇怪怪的问题，这里用 -4
+	// 为了可以正常的看到日志等问题，这里用 -8
 
 	b.WriteString("\n")
-	for _, stat := range d.showWorkers(maxLines - 4) {
+	for _, stat := range d.showWorkers(maxLines - 8) {
 		id := stat.id
 		switch stat.status {
 		case "", "error", "done":
