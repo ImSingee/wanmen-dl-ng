@@ -51,7 +51,9 @@ func httpRequestWithAutoRetry(request *http.Request) (*http.Response, error) {
 }
 
 type LectureInfo struct {
+	Name        string
 	VideoStream *VideoStream
+	RawJsonBody []byte
 }
 
 func apiGetWanmenLectureInfo(lectureId string) (*LectureInfo, error) {
@@ -81,6 +83,10 @@ func apiGetWanmenLectureInfo(lectureId string) (*LectureInfo, error) {
 		return nil, fmt.Errorf("cannot request lecture info api (unmarshal json): %w", err)
 	}
 
+	// get name
+	name, _ := jsonBody["name"].(string)
+
+	// get video hls
 	var hls *VideoStream
 	if v, ok := jsonBody["video"]; ok {
 		hls = tryGetHls(v)
@@ -92,7 +98,11 @@ func apiGetWanmenLectureInfo(lectureId string) (*LectureInfo, error) {
 		return nil, errors.New("no hls found")
 	}
 
-	return &LectureInfo{VideoStream: hls}, nil
+	return &LectureInfo{
+		Name:        name,
+		VideoStream: hls,
+		RawJsonBody: body,
+	}, nil
 }
 
 type VideoStream struct {
