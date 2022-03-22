@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 var client = http.DefaultClient
@@ -217,6 +218,123 @@ func apiGetWanmenCourseLectures(courseId string) (*CourseLectures, error) {
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
+		return nil, fmt.Errorf("cannot build course lectures api request: %w", err)
+	}
+	req.Header = getHeaders()
+
+	response, err := httpRequestWithAutoRetry(req)
+	if err != nil {
+		return nil, fmt.Errorf("cannot request course lectures api: %w", err)
+	}
+	defer response.Body.Close()
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("cannot request course lectures api (read body): %w", err)
+	}
+
+	var courseInfo CourseInfo_Chapters
+
+	err = json.Unmarshal(body, &courseInfo)
+	if err != nil {
+		return nil, fmt.Errorf("cannot request course lectures api (unmarshal json): %w", err)
+	}
+
+	return &CourseLectures{
+		Chapters: courseInfo,
+		Raw:      body,
+	}, nil
+}
+
+type CourseInfo struct {
+	Price                   int                    `json:"price"`
+	Hide                    bool                   `json:"hide"`
+	Likes                   int                    `json:"likes"`
+	Type                    string                 `json:"type"`
+	Mediatype               string                 `json:"mediaType"`
+	Status                  string                 `json:"status"`
+	State                   string                 `json:"state"`
+	Isended                 bool                   `json:"isEnded"`
+	Isonlive                bool                   `json:"isOnLive"`
+	Playbackstatus          string                 `json:"playbackStatus"`
+	App                     string                 `json:"app"`
+	Views                   int                    `json:"views"`
+	Communitytype           string                 `json:"communityType"`
+	Subject                 string                 `json:"subject"`
+	Quizshuffled            bool                   `json:"quizShuffled"`
+	Podcasttype             string                 `json:"podcastType"`
+	Isregionrestricted      bool                   `json:"isRegionRestricted"`
+	Namehistory             []string               `json:"nameHistory"`
+	K12Hide                 bool                   `json:"k12Hide"`
+	Opduration              int                    `json:"opDuration"`
+	Edduration              int                    `json:"edDuration"`
+	Introductionimages      []interface{}          `json:"introductionImages"`
+	Schedule                []interface{}          `json:"schedule"`
+	Name                    string                 `json:"name"`
+	Expiration              int                    `json:"expiration"`
+	Faq                     []interface{}          `json:"faq"`
+	Documents               []*CourseInfo_Document `json:"documents"`
+	Createdat               time.Time              `json:"createdAt"`
+	Updatedat               time.Time              `json:"updatedAt"`
+	Showat                  time.Time              `json:"showAt"`
+	Hoursoflesson           float64                `json:"hoursOfLesson"`
+	Bigimage                string                 `json:"bigImage"`
+	Description             string                 `json:"description"`
+	Smallimage              string                 `json:"smallImage"`
+	Videocount              int                    `json:"videoCount"`
+	Lastupdatetimeoflecture time.Time              `json:"lastUpdateTimeOfLecture"`
+	Tag                     string                 `json:"tag"`
+	Topiccountinplan        int                    `json:"topicCountInPlan"`
+	Endat                   time.Time              `json:"endAt"`
+	Specialprice            int                    `json:"specialPrice"`
+	Incoming                bool                   `json:"incoming"`
+	Bigimageurl             string                 `json:"bigImageUrl"`
+	Smallimageurl           string                 `json:"smallImageUrl"`
+	Teachername             string                 `json:"teacherName"`
+	Teacheravatar           string                 `json:"teacherAvatar"`
+	Teacherdescription      string                 `json:"teacherDescription"`
+	ID                      string                 `json:"id"`
+	Expirationtext          string                 `json:"expirationText"`
+	Share                   struct {
+		Title   string `json:"title"`
+		Content string `json:"content"`
+		Image   string `json:"image"`
+	} `json:"share"`
+	Paymentalert     string      `json:"paymentAlert"`
+	Ispaid           bool        `json:"isPaid"`
+	Hidedat          interface{} `json:"hidedAt"`
+	Remainingdays    int         `json:"remainingDays"`
+	Expiredat        interface{} `json:"expiredAt"`
+	Remainingminutes int         `json:"remainingMinutes"`
+	Isliked          bool        `json:"isLiked"`
+	Isfaved          bool        `json:"isFaved"`
+	Ispass           bool        `json:"isPass"`
+	Hastopic         bool        `json:"hasTopic"`
+	Hasexamticket    bool        `json:"hasExamTicket"`
+	Latestlecture    interface{} `json:"latestLecture"`
+	Hascontents      bool        `json:"hasContents"`
+	Hasmaterial      bool        `json:"hasMaterial"`
+	Expiredattext    string      `json:"expiredAtText"`
+	Totalstudents    int         `json:"totalStudents"`
+	Haslecture       bool        `json:"hasLecture"`
+
+	Raw []byte // 原始数据
+}
+
+type CourseInfo_Document struct {
+	Index int    // 次序 1-based 代码中添加
+	ID    string `json:"_id"`
+	Name  string `json:"name"`
+	Order int    `json:"order"`
+	URL   string `json:"url"`
+	Key   string `json:"key"`
+	Ext   string `json:"ext"`
+}
+
+func apiGetWanmenCourseInfo(courseId string) (*CourseInfo, error) {
+	url := fmt.Sprintf("https://api.wanmen.org/4.0/content/v2/courses/%s", courseId)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
 		return nil, fmt.Errorf("cannot build course info api request: %w", err)
 	}
 	req.Header = getHeaders()
@@ -232,15 +350,14 @@ func apiGetWanmenCourseLectures(courseId string) (*CourseLectures, error) {
 		return nil, fmt.Errorf("cannot request course info api (read body): %w", err)
 	}
 
-	var courseInfo CourseInfo_Chapters
+	var courseInfo CourseInfo
 
 	err = json.Unmarshal(body, &courseInfo)
 	if err != nil {
 		return nil, fmt.Errorf("cannot request course info api (unmarshal json): %w", err)
 	}
 
-	return &CourseLectures{
-		Chapters: courseInfo,
-		Raw:      body,
-	}, nil
+	courseInfo.Raw = body
+
+	return &courseInfo, nil
 }

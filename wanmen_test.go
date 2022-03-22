@@ -18,7 +18,12 @@ func TestGetWanmenLectureInfo(t *testing.T) {
 	tt.AssertNotEqual(t, len(info.RawJsonBody), 0)
 }
 
-func TestGetWanmenCourseInfo(t *testing.T) {
+func TestGetWanmenCourseLectures(t *testing.T) {
 	_, err := apiGetWanmenCourseLectures("59df20a60dcf357a8bc0000c")
+	tt.AssertIsNotError(t, err)
+}
+
+func TestGetWanmenCourseInfo(t *testing.T) {
+	_, err := apiGetWanmenCourseInfo("60acbe86bf5ea22cc961b619")
 	tt.AssertIsNotError(t, err)
 }
