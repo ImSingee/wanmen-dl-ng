@@ -134,7 +134,7 @@ func (d *Dashboard) Close() {
 func (d *Dashboard) actionHandler(method string, params ...interface{}) {
 	switch method {
 	case "init": // courseInfo
-		info := params[0].(*CourseInfo)
+		info := params[0].(*CourseLectures)
 		d.chaptersTotal = len(info.Chapters)
 		c := 0
 		for _, chapter := range info.Chapters {
