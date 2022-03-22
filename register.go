@@ -28,6 +28,7 @@ var cmdRegister = &cobra.Command{
 				return fmt.Errorf("cannot get course info: %v", err)
 			}
 			courseName = info.Name
+			fmt.Println(courseName)
 		}
 
 		config.NameMap[courseId] = courseName
