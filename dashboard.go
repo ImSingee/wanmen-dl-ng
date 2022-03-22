@@ -361,17 +361,17 @@ func (d *Dashboard) StatsString(maxLines int) string {
 		id := stat.id
 		switch stat.status {
 		case "", "error", "done":
-			b.WriteString(fmt.Sprintf("* [<%d>] LEISURE\n", id))
+			b.WriteString(fmt.Sprintf("* [%d] LEISURE\n", id))
 		case "prepare":
-			b.WriteString(fmt.Sprintf("* [<%d>] PREPARE %s\n", id, stat.desc))
+			b.WriteString(fmt.Sprintf("* [%d] PREPARE %s\n", id, stat.desc))
 		case "downloading":
-			b.WriteString(fmt.Sprintf("* [<%d>] %d/%d %s\n", id, stat.done, stat.total, stat.desc))
+			b.WriteString(fmt.Sprintf("* [%d] %d/%d %s\n", id, stat.done, stat.total, stat.desc))
 		case "converting":
-			b.WriteString(fmt.Sprintf("* [<%d>] CONVERTING %s\n", id, stat.desc))
+			b.WriteString(fmt.Sprintf("* [%d] CONVERTING %s\n", id, stat.desc))
 		case "quit":
-			b.WriteString(fmt.Sprintf("* [<%d>] SHUTDOWN\n", id))
+			b.WriteString(fmt.Sprintf("* [%d] SHUTDOWN\n", id))
 		default: // unknown
-			b.WriteString(fmt.Sprintf("* [<%d>] UNKNOWN %s %s\n", id, stat.status, stat.desc))
+			b.WriteString(fmt.Sprintf("* [%d] UNKNOWN %s %s\n", id, stat.status, stat.desc))
 		}
 	}
 
