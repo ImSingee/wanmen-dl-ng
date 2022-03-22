@@ -152,17 +152,40 @@ func (d *Dashboard) actionHandler(method string, params ...interface{}) {
 		td := params[1].(*toDownload)
 		d.workers[workerId-1].status = "prepare"
 		d.workers[workerId-1].lecture = fmt.Sprintf("Ch%d/%d-%s", td.Chapter.Index, td.Lecture.Index, td.Lecture.Name)
-	case "sub": // workerId, subMethod, subParams
-		//workerId := params[0].(int)
-		subMethod := params[1].(string)
-		//subParams := params[2].([]interface{})
+	case "sub": // workerId, task,  subMethod, subParams
+		workerId := params[0].(int)
+		//task := params[1].(*toDownload)
+		subMethod := params[2].(string)
+		subParams := params[3].([]interface{})
 
 		switch subMethod {
+		case "downloading": // i, N
+			done := subParams[0].(int)
+			total := subParams[1].(int)
+
+			d.workers[workerId-1].status = "downloading"
+			d.workers[workerId-1].done = done
+			d.workers[workerId-1].total = total
+		case "ffmpeg_start":
+			d.workers[workerId-1].status = "converting"
+		case "ffmpeg_error": // output
+			ffmpegOutput := subParams[0].(string)
+
+			d.logCh <- LogMessage{Level: LogLevelError, Message: fmt.Sprintf("ffmpeg error on %s: %s", d.workers[workerId-1].lecture, ffmpegOutput)}
+
+			d.workers[workerId-1].status = "error"
+		case "ffmpeg_done":
+			d.workers[workerId-1].status = "done"
+		case "retry": // i, err
+			times := subParams[0].(int)
+			err := subParams[1].(error)
+
+			d.logCh <- LogMessage{Level: LogLevelWarning, Message: fmt.Sprintf("Download %s fail, retry (%d times): %v", d.workers[workerId-1].lecture, times, err)}
 		default:
 			d.logCh <- LogMessage{Level: LogLevelDebug, Message: fmt.Sprintf("Unknown sub method: %s", subMethod)}
 		}
 
-	case "done": // workerId, toDownload
+	case "done": // workerId, task
 		workerId := params[0].(int)
 		// td := params[1].(*toDownload)
 		d.workers[workerId-1].status = "done"

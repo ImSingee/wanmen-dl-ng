@@ -81,31 +81,31 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 			defer updateProgress("quit", workerId)
 
 			for {
-				toDownload, ok := <-queue // 从队列中取出一个下载任务
+				task, ok := <-queue // 从队列中取出一个下载任务
 				if !ok {
 					break
 				}
 
-				updateProgress("start", workerId, toDownload)
+				updateProgress("start", workerId, task)
 
-				if !toDownload.ForceReDownload && isExist(toDownload.LecturePath) {
-					updateProgress("skip-lecture", workerId, toDownload)
+				if !task.ForceReDownload && isExist(task.LecturePath) {
+					updateProgress("skip-lecture", workerId, task)
 					continue
 				}
 
-				metaPath := path.Join(metaDir, fmt.Sprintf("%s:%s.json", toDownload.Chapter.ID, toDownload.Lecture.ID))
+				metaPath := path.Join(metaDir, fmt.Sprintf("%s:%s.json", task.Chapter.ID, task.Lecture.ID))
 
 				f := func(a string, v ...interface{}) {
-					updateProgress("sub", workerId, a, v)
+					updateProgress("sub", workerId, task, a, v)
 				}
 
-				_, err := downloadLecture(toDownload.Lecture.ID, toDownload.LecturePath, metaPath, full, f)
+				_, err := downloadLecture(task.Lecture.ID, task.LecturePath, metaPath, full, f)
 				if err != nil {
-					updateProgress("error", workerId, toDownload, err)
+					updateProgress("error", workerId, task, err)
 					continue
 				}
 
-				updateProgress("done", workerId, toDownload)
+				updateProgress("done", workerId, task)
 			}
 		}(i + 1)
 	}
