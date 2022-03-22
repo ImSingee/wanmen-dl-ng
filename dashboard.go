@@ -20,7 +20,7 @@ type Dashboard struct {
 	documentsDone  int
 	documentsTotal int
 
-	errorsCount int64
+	errorsCount int
 
 	workers []workerStat
 
