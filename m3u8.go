@@ -64,17 +64,24 @@ func tryDownloadLectureM3U8(url string, target string, full bool, reportProgress
 	}
 
 	reportProgress("ffmpeg_start")
+
+	ffmpegTarget := target + ".ffmpeg.mp4"
+
 	// 运行 ffmpeg 将 ts 集合转换为 mp4
 	ffmpegOutput, err := exec.Command(ffmpegPath, "-y", "-loglevel", "error",
 		"-i", partFile,
 		"-bsf:a", "aac_adtstoasc",
 		"-vcodec", "copy",
 		"-acodec", "copy",
-		target,
+		ffmpegTarget,
 	).CombinedOutput()
 	if err != nil {
 		reportProgress("ffmpeg_error", string(ffmpegOutput))
 		return err
+	}
+	err = os.Rename(ffmpegTarget, target)
+	if err != nil {
+		return fmt.Errorf("cannot rename ffmpeg middle target to final target: %w", err)
 	}
 	reportProgress("ffmpeg_done")
 

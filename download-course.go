@@ -11,10 +11,11 @@ import (
 )
 
 type toDownload struct {
-	Chapter     *CourseInfo_Chapter
-	ChapterDir  string
-	Lecture     *CourseInfo_Lecture
-	LecturePath string
+	Chapter         *CourseInfo_Chapter
+	ChapterDir      string
+	Lecture         *CourseInfo_Lecture
+	LecturePath     string
+	ForceReDownload bool
 }
 
 type updateCourseProgressFunc func(state string, params ...interface{})
@@ -78,6 +79,11 @@ func downloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 				}
 
 				updateProgress("start", workerId, toDownload)
+
+				if !toDownload.ForceReDownload && isExist(toDownload.LecturePath) {
+					updateProgress("skip", workerId, toDownload)
+					continue
+				}
 
 				f := func(a string, v ...interface{}) {
 					updateProgress("sub", workerId, a, v)
