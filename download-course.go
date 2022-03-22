@@ -31,9 +31,9 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 		return nil
 	}
 
-	courseInfo, err := apiGetWanmenCourseInfo(courseId)
+	courseInfo, err := apiGetWanmenCourseLectures(courseId)
 	if err != nil {
-		return fmt.Errorf("apiGetWanmenCourseInfo error: %v", err)
+		return fmt.Errorf("apiGetWanmenCourseLectures error: %v", err)
 	}
 
 	updateProgress("init", courseInfo)
