@@ -12,7 +12,7 @@ var cmdVerifyAll = &cobra.Command{
 		anyError := false
 
 		for _, courseId := range list {
-			ok := verify(courseId, "", flagOffline, flagUpdateMeta)
+			ok := verify(courseId, "", flagSkipFFMpeg, flagOffline, flagUpdateMeta)
 			if !ok {
 				anyError = true
 				fmt.Printf("Course ID %s verified fail\n", courseId)
@@ -30,6 +30,7 @@ var cmdVerifyAll = &cobra.Command{
 func init() {
 	app.AddCommand(cmdVerifyAll)
 
+	cmdVerifyAll.Flags().BoolVarP(&flagSkipFFMpeg, "skip-ffmpeg", "m", false, "")
 	cmdVerifyAll.Flags().BoolVarP(&flagOffline, "offline", "o", false, "offline mode (won't request wanmen api again)")
 	cmdVerifyAll.Flags().BoolVar(&flagUpdateMeta, "update-meta", true, "also update exist meta")
 }

@@ -29,7 +29,7 @@ var cmdVerify = &cobra.Command{
 		anyError := false
 
 		for _, courseId := range args {
-			ok := verify(courseId, flagCoursePath, flagOffline, flagUpdateMeta)
+			ok := verify(courseId, flagCoursePath, flagSkipFFMpeg, flagOffline, flagUpdateMeta)
 			if !ok {
 				anyError = true
 				fmt.Printf("Course ID %s verified fail\n", courseId)
@@ -44,7 +44,7 @@ var cmdVerify = &cobra.Command{
 	},
 }
 
-func verify(courseId string, courseDir string, offline, updateMeta bool) bool {
+func verify(courseId string, courseDir string, noConvert, offline, updateMeta bool) bool {
 	courseName, ok := GetName(courseId)
 	if !ok {
 		fmt.Printf("Unknown course id %s, please register first", courseId)
@@ -122,9 +122,18 @@ func verify(courseId string, courseDir string, offline, updateMeta bool) bool {
 		for j, lecture := range chapter.Children {
 			lecturePath := filepath.Join(chapterdir, fmt.Sprintf("%d-%d %s.mp4", i+1, j+1, cleanName(lecture.Name)))
 
-			if !isExist(lecturePath) {
-				fmt.Printf("Lecture %s not exist\n", lecturePath)
-				pass = false
+			if noConvert {
+				lecturePartDonePath := lecturePath + ".stream.mp4"
+
+				if !isExist(lecturePath) && !isExist(lecturePartDonePath) {
+					fmt.Printf("Lecture %s not exist\n", lecturePartDonePath)
+					pass = false
+				}
+			} else {
+				if !isExist(lecturePath) {
+					fmt.Printf("Lecture %s not exist\n", lecturePath)
+					pass = false
+				}
 			}
 		}
 	}
@@ -180,6 +189,7 @@ func verify(courseId string, courseDir string, offline, updateMeta bool) bool {
 func init() {
 	app.AddCommand(cmdVerify)
 
+	cmdVerify.Flags().BoolVarP(&flagSkipFFMpeg, "skip-ffmpeg", "m", false, "")
 	cmdVerify.Flags().BoolVarP(&flagOffline, "offline", "o", false, "offline mode (won't request wanmen api again)")
 	cmdVerify.Flags().BoolVar(&flagUpdateMeta, "update-meta", true, "also update exist meta")
 	cmdVerify.Flags().StringVarP(&flagCoursePath, "path", "p", "", "course path")
