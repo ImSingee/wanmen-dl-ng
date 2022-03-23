@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/ImSingee/go-ex/exjson"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,7 +13,7 @@ import (
 
 type updateProgressFunc func(action string, params ...interface{})
 
-func DownloadCourse(courseId, courseDir string, forceLevel int, full bool, concurrency int, noConvert bool, updateProgress updateProgressFunc) error {
+func DownloadCourse(courseId, courseDir string, forceLevel int, full bool, concurrency int, noConvert bool, offline bool, updateProgress updateProgressFunc) error {
 	metaDir := filepath.Join(courseDir, ".meta")
 	_ = os.MkdirAll(metaDir, 0755)
 
@@ -22,24 +23,48 @@ func DownloadCourse(courseId, courseDir string, forceLevel int, full bool, concu
 		return nil
 	}
 
-	// 请求课程的章节信息
-	courseLectures, err := apiGetWanmenCourseLectures(courseId)
-	if err != nil {
-		return fmt.Errorf("apiGetWanmenCourseLectures error: %v", err)
-	}
-	updateProgress("init-lectures", courseLectures)
-	// 将原始 lectures 信息存储
-	_ = os.WriteFile(filepath.Join(metaDir, "lectures.json"), courseLectures.Raw, 0644)
+	var courseLectures *CourseLectures
+	var courseInfo *CourseInfo
+	var err error
+	if offline {
+		courseLectures = &CourseLectures{}
+		courseInfo = &CourseInfo{}
 
-	// 请求课程的文档信息
-	courseInfo, err := apiGetWanmenCourseInfo(courseId)
-	if err != nil {
-		return fmt.Errorf("apiGetWanmenCourseInfo error: %v", err)
+		lecturesMetaPath := filepath.Join(metaDir, "lectures.json")
+		infoMetaPath := filepath.Join(metaDir, "info.json")
+
+		err = exjson.Read(lecturesMetaPath, &courseLectures.Chapters)
+		if err != nil {
+			return fmt.Errorf("cannot load lectures meta file %s: %v", lecturesMetaPath, err)
+		}
+
+		err = exjson.Read(infoMetaPath, courseInfo)
+		if err != nil {
+			return fmt.Errorf("cannot load info meta file %s: %v", infoMetaPath, err)
+		}
+	} else {
+		courseLectures, err = apiGetWanmenCourseLectures(courseId)
+		if err != nil {
+			return fmt.Errorf("cannot get course lectures: %v", err)
+		}
+
+		courseInfo, err = apiGetWanmenCourseInfo(courseId)
+		if err != nil {
+			return fmt.Errorf("cannot get course info: %v", err)
+		}
+
+		// 更新存储最新的 meta
+		lecturesMetaPath := filepath.Join(metaDir, "lectures.json")
+		infoMetaPath := filepath.Join(metaDir, "info.json")
+
+		_ = os.WriteFile(lecturesMetaPath, courseLectures.Raw, 0644)
+		_ = os.WriteFile(infoMetaPath, courseInfo.Raw, 0644)
 	}
+
+	updateProgress("init-lectures", courseLectures)
+
 	courseDocuments := courseInfo.Documents
 	updateProgress("init-documents", courseDocuments)
-	// 将原始课程信息存储
-	_ = os.WriteFile(filepath.Join(metaDir, "info.json"), courseInfo.Raw, 0644)
 
 	wg := sync.WaitGroup{}
 

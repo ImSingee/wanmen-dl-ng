@@ -13,7 +13,7 @@ var cmdDownloadAll = &cobra.Command{
 		errorsMap := map[string]error{}
 
 		for _, courseId := range list {
-			err := download(courseId, flagDownloadTo, flagForce, flagFull, flagSkipFFMpeg, flagConcurrency)
+			err := download(courseId, flagDownloadTo, flagForce, flagFull, flagSkipFFMpeg, flagOffline, flagConcurrency)
 			fmt.Println()
 			if err != nil {
 				errorsMap[courseId] = err
@@ -36,6 +36,7 @@ var cmdDownloadAll = &cobra.Command{
 func init() {
 	app.AddCommand(cmdDownloadAll)
 
+	cmdDownloadAll.Flags().BoolVar(&flagOffline, "offline", false, "")
 	cmdDownloadAll.Flags().BoolVarP(&flagSkipFFMpeg, "skip-ffmpeg", "m", false, "")
 	cmdDownloadAll.Flags().IntVarP(&flagForce, "force", "f", 0, "跳过去重（0-不跳过, 1-跳过课程检测, 2-跳过文件检测)")
 	cmdDownloadAll.Flags().BoolVar(&flagFull, "full", false, "不去除万门广告")

@@ -27,11 +27,11 @@ var cmdDownload = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		courseId := args[0]
-		return download(courseId, flagDownloadTo, flagForce, flagFull, flagSkipFFMpeg, flagConcurrency)
+		return download(courseId, flagDownloadTo, flagForce, flagFull, flagSkipFFMpeg, flagOffline, flagConcurrency)
 	},
 }
 
-func download(courseId string, downloadTo string, forceLevel int, full bool, noConvert bool, concurrency int) error {
+func download(courseId string, downloadTo string, forceLevel int, full bool, noConvert bool, offline bool, concurrency int) error {
 	if !noConvert && ffmpegPath == "" {
 		return errors.New("ffmpeg is not installed")
 	}
@@ -54,12 +54,13 @@ func download(courseId string, downloadTo string, forceLevel int, full bool, noC
 		actionHandler <- DashboardAction{state, params}
 	}
 
-	return DownloadCourse(courseId, downloadTo, forceLevel, full, concurrency, noConvert, updateProgress)
+	return DownloadCourse(courseId, downloadTo, forceLevel, full, concurrency, noConvert, offline, updateProgress)
 }
 
 func init() {
 	app.AddCommand(cmdDownload)
 
+	cmdDownload.Flags().BoolVar(&flagOffline, "offline", false, "")
 	cmdDownload.Flags().BoolVarP(&flagSkipFFMpeg, "skip-ffmpeg", "m", false, "")
 	cmdDownload.Flags().IntVarP(&flagForce, "force", "f", 0, "跳过去重（0-不跳过, 1-跳过课程检测, 2-跳过文件检测)")
 	cmdDownload.Flags().BoolVar(&flagFull, "full", false, "不去除万门广告")
