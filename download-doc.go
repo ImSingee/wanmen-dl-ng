@@ -50,6 +50,11 @@ func downloadDoc(docInfo *CourseInfo_Document, saveTo string, metaPrefix string,
 		return fmt.Errorf("failed to download doc: %w", err)
 	}
 
+	err = f.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close file: %w", err)
+	}
+
 	err = os.Rename(tempSaveTo, saveTo)
 	if err != nil {
 		return fmt.Errorf("failed to rename temp file: %w", err)
