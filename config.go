@@ -20,7 +20,19 @@ var config = &Config{
 }
 
 func init() {
-	data, err := os.ReadFile("config.json")
+	configPath := "config.json"
+
+	for i, arg := range os.Args {
+		if arg == "-C" || arg == "--config" {
+			if len(os.Args) > i+1 {
+				configPath = os.Args[i+1]
+			} else {
+				panic("-C or --config must be followed by a path")
+			}
+		}
+	}
+
+	data, err := os.ReadFile(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return

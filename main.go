@@ -13,6 +13,8 @@ var app = &cobra.Command{
 }
 
 func main() {
+	app.PersistentFlags().StringP("config", "C", "", "配置文件路径，默认为 ./config.json")
+
 	err := app.Execute()
 	if err != nil {
 		fmt.Printf("ERROR: %v\n", err)
