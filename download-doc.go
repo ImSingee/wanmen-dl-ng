@@ -13,7 +13,7 @@ func downloadDoc(docInfo *CourseInfo_Document, saveTo string, metaPrefix string,
 		if err != nil {
 			_ = appendJSON(metaPrefix+".error.jsonl", map[string]interface{}{
 				"op":  "fail",
-				"err": err,
+				"err": err.Error(),
 			})
 		}
 	}()

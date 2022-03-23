@@ -18,7 +18,7 @@ func downloadLecture(lectureID string, lecturePath string, metaPrefix string, no
 		err = fmt.Errorf("cannot get lecture info: %v", err)
 		_ = appendJSON(metaPrefix+".error.jsonl", map[string]interface{}{
 			"op":  "fail",
-			"err": err,
+			"err": err.Error(),
 		})
 		return -1, err
 	}
@@ -40,7 +40,7 @@ func downloadLecture(lectureID string, lecturePath string, metaPrefix string, no
 			"op":   "retry",
 			"mode": i,
 			"url":  url,
-			"err":  err,
+			"err":  err.Error(),
 		})
 		latestError = err
 	}
@@ -51,7 +51,7 @@ func downloadLecture(lectureID string, lecturePath string, metaPrefix string, no
 
 	_ = appendJSON(metaPrefix+".error.jsonl", map[string]interface{}{
 		"op":  "fail",
-		"err": latestError,
+		"err": latestError.Error(),
 	})
 	return -1, latestError
 
