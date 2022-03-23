@@ -33,7 +33,7 @@ func markDone(courseId string, courseDir string) error {
 	}
 
 	if courseDir == "" {
-		courseDir = filepath.Join(config.DownloadTo, courseName)
+		courseDir = filepath.Join(config.DownloadTo, cleanName(courseName))
 	}
 
 	if !isExist(courseDir) {

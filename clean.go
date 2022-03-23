@@ -48,7 +48,7 @@ func cleanById(id string, dryRun bool) error {
 }
 
 func cleanByName(name string, dryRun bool) error {
-	return cleanByPath(filepath.Join(config.DownloadTo, name), dryRun)
+	return cleanByPath(filepath.Join(config.DownloadTo, cleanName(name)), dryRun)
 }
 
 func cleanByPath(p string, dryRun bool) error {

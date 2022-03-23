@@ -33,7 +33,7 @@ func checkDone(courseId string) {
 		return
 	}
 
-	d := filepath.Join(config.DownloadTo, courseName)
+	d := filepath.Join(config.DownloadTo, cleanName(courseName))
 
 	f1 := filepath.Join(d, ".done")
 	f2 := filepath.Join(d, ".meta", "DONE")

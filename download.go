@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
+	"os"
 	"path/filepath"
 	"runtime"
 )
@@ -47,7 +48,12 @@ func download(courseId string, downloadTo string, forceLevel int, full bool, noC
 	defer dashboard.Close()
 
 	if downloadTo == "" {
-		downloadTo = filepath.Join(config.DownloadTo, courseName)
+		downloadTo = filepath.Join(config.DownloadTo, cleanName(courseName))
+
+		legacyDownloadTo := filepath.Join(config.DownloadTo, courseName)
+		if downloadTo != legacyDownloadTo {
+			_ = os.Rename(legacyDownloadTo, downloadTo)
+		}
 	}
 
 	updateProgress := func(state string, params ...interface{}) {

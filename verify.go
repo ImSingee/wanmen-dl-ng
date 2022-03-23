@@ -76,7 +76,12 @@ func verify(courseId string, courseDir string, noConvert, offline, updateMeta bo
 	bluePrintf(">>> Verify %s (%s)\n", courseName, courseId)
 
 	if courseDir == "" {
-		courseDir = filepath.Join(config.DownloadTo, courseName)
+		courseDir = filepath.Join(config.DownloadTo, cleanName(courseName))
+
+		legacyCourseDir := filepath.Join(config.DownloadTo, courseName)
+		if courseDir != legacyCourseDir {
+			_ = os.Rename(legacyCourseDir, courseDir)
+		}
 	}
 
 	if !isExist(courseDir) {
