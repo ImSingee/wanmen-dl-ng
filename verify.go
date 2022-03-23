@@ -45,20 +45,27 @@ var cmdVerify = &cobra.Command{
 }
 
 func verify(courseId string, courseDir string, noConvert, offline, updateMeta bool) bool {
+	redPrintf := func(format string, args ...interface{}) {
+		fmt.Printf("\033[31m"+format+"\033[0m", args...)
+	}
+	bluePrintf := func(format string, args ...interface{}) {
+		fmt.Printf("\033[34m"+format+"\033[0m", args...)
+	}
+
 	courseName, ok := GetName(courseId)
 	if !ok {
-		fmt.Printf("Unknown course id %s, please register first", courseId)
+		redPrintf("Unknown course id %s, please register first", courseId)
 		return false
 	}
 
-	fmt.Printf(">>> Verify %s (%s)\n", courseName, courseId)
+	bluePrintf(">>> Verify %s (%s)\n", courseName, courseId)
 
 	if courseDir == "" {
 		courseDir = filepath.Join(config.DownloadTo, courseName)
 	}
 
 	if !isExist(courseDir) {
-		fmt.Printf("Course path %s not exist\n", courseDir)
+		redPrintf("Course path %s not exist\n", courseDir)
 		return false
 	}
 
@@ -78,25 +85,25 @@ func verify(courseId string, courseDir string, noConvert, offline, updateMeta bo
 
 		err = exjson.Read(lecturesMetaPath, &courseLectures.Chapters)
 		if err != nil {
-			fmt.Printf("Cannot load lectures meta file %s: %v\n", lecturesMetaPath, err)
+			redPrintf("Cannot load lectures meta file %s: %v\n", lecturesMetaPath, err)
 			return false
 		}
 
 		err = exjson.Read(infoMetaPath, courseInfo)
 		if err != nil {
-			fmt.Printf("Cannot load course info meta file %s: %v\n", infoMetaPath, err)
+			redPrintf("Cannot load course info meta file %s: %v\n", infoMetaPath, err)
 			return false
 		}
 	} else {
 		courseLectures, err = apiGetWanmenCourseLectures(courseId)
 		if err != nil {
-			fmt.Printf("Failed to get course lectures: %s\n", err)
+			redPrintf("Failed to get course lectures: %s\n", err)
 			return false
 		}
 
 		courseInfo, err = apiGetWanmenCourseInfo(courseId)
 		if err != nil {
-			fmt.Printf("Failed to get course info: %s\n", err)
+			redPrintf("Failed to get course info: %s\n", err)
 			return false
 		}
 
@@ -126,12 +133,12 @@ func verify(courseId string, courseDir string, noConvert, offline, updateMeta bo
 				lecturePartDonePath := lecturePath + ".stream.mp4"
 
 				if !isExist(lecturePath) && !isExist(lecturePartDonePath) {
-					fmt.Printf("Lecture %s not exist\n", lecturePartDonePath)
+					redPrintf("Lecture %s not exist\n", lecturePartDonePath)
 					pass = false
 				}
 			} else {
 				if !isExist(lecturePath) {
-					fmt.Printf("Lecture %s not exist\n", lecturePath)
+					redPrintf("Lecture %s not exist\n", lecturePath)
 					pass = false
 				}
 			}
@@ -145,7 +152,7 @@ func verify(courseId string, courseDir string, noConvert, offline, updateMeta bo
 		docPath := filepath.Join(courseDir, "资料", cleanName(fmt.Sprintf("%d - %s.%s", i+1, doc.Name, doc.Ext)))
 
 		if !isExist(docPath) {
-			fmt.Printf("Document %s not exist\n", docPath)
+			redPrintf("Document %s not exist\n", docPath)
 			pass = false
 		}
 	}
@@ -179,7 +186,6 @@ func verify(courseId string, courseDir string, noConvert, offline, updateMeta bo
 				fmt.Println("DONE marker is removed from course automatically (due to not-pass-verify)")
 				_ = os.Remove(donePath)
 			}
-
 		}
 	}
 
