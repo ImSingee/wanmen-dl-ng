@@ -1,13 +1,15 @@
 package main
 
-import "sync"
+import (
+	"sync"
+)
 
 func GetName(id string) (string, bool) {
 	if name := config.NameMap[id]; name != "" {
-		return name, true
+		return cleanName(name), true
 	}
 	if name := Names[id]; name != "" {
-		return name, true
+		return cleanName(name), true
 	}
 
 	return "UNKNOWN", false
@@ -20,14 +22,14 @@ func GetID(name string) (string, bool) {
 	initNameOnce.Do(func() {
 		nameToId = make(map[string]string)
 		for id, name := range Names {
-			nameToId[name] = id
+			nameToId[cleanName(name)] = id
 		}
 		for id, name := range config.NameMap {
-			nameToId[name] = id
+			nameToId[cleanName(name)] = id
 		}
 	})
 
-	v, ok := nameToId[name]
+	v, ok := nameToId[cleanName(name)]
 
 	return v, ok
 }
