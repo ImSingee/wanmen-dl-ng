@@ -217,19 +217,27 @@ func (d *Dashboard) actionHandler(method string, params ...interface{}) {
 	case "done": // workerId, task
 		// 任务完成
 		workerId := params[0].(int)
-		// td := params[1].(*DownloadTask)
 		d.workers[workerId-1].status = "done"
-		d.lecturesDone++
+		task := params[1].(*DownloadTask)
+		if task.Course != nil {
+			d.lecturesDone++
+		} else {
+			d.documentsDone++
+		}
 	case "error": // workerId, DownloadTask, err
 		// 任务异常
 		workerId := params[0].(int)
-		td := params[1].(*DownloadTask)
+		task := params[1].(*DownloadTask)
 		err := params[2].(error)
 
 		d.errorsCount++
-		d.logCh <- LogMessage{Level: LogLevelError, Message: fmt.Sprintf("%v (%v, %v)", err, workerId, td.Path())}
+		d.logCh <- LogMessage{Level: LogLevelError, Message: fmt.Sprintf("%v (%v, %v)", err, workerId, task.Path())}
 		d.workers[workerId-1].status = "error"
-		d.lecturesDone++
+		if task.Course != nil {
+			d.lecturesDone++
+		} else {
+			d.documentsDone++
+		}
 	case "quit": // workerId
 		// worker 停止
 		workerId := params[0].(int)
