@@ -25,7 +25,7 @@ var nameReplacer = strings.NewReplacer(
 )
 
 func cleanName(name string) string {
-	return nameReplacer.Replace(name)
+	return strings.TrimSpace(nameReplacer.Replace(name))
 }
 
 func getToken() (string, string) {
