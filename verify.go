@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"github.com/ImSingee/go-ex/exjson"
+	"github.com/rclone/rclone/lib/terminal"
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -45,16 +47,29 @@ var cmdVerify = &cobra.Command{
 }
 
 func verify(courseId string, courseDir string, noConvert, offline, updateMeta bool) bool {
-	redPrintf := func(format string, args ...interface{}) {
-		fmt.Printf("\033[31m"+format+"\033[0m", args...)
-	}
-	bluePrintf := func(format string, args ...interface{}) {
-		fmt.Printf("\033[34m"+format+"\033[0m", args...)
+	terminal.Start()
+
+	var redPrintf, bluePrintf func(format string, args ...interface{})
+
+	if runtime.GOOS == "windows" {
+		redPrintf = func(format string, args ...interface{}) {
+			fmt.Fprintf(terminal.Out, "[ERROR] "+format, args...)
+		}
+		bluePrintf = func(format string, args ...interface{}) {
+			fmt.Fprintf(terminal.Out, format, args...)
+		}
+	} else {
+		redPrintf = func(format string, args ...interface{}) {
+			fmt.Fprintf(terminal.Out, "\x1b[31m [ERROR] "+format+"\x1b[0m", args...)
+		}
+		bluePrintf = func(format string, args ...interface{}) {
+			fmt.Fprintf(terminal.Out, "\x1b[34m"+format+"\x1b[0m", args...)
+		}
 	}
 
 	courseName, ok := GetName(courseId)
 	if !ok {
-		redPrintf("Unknown course id %s, please register first", courseId)
+		redPrintf("Unknown course id %s, please register first\n", courseId)
 		return false
 	}
 
