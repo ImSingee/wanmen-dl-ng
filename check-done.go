@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"path"
+	"path/filepath"
 )
 
 var cmdCheck = &cobra.Command{
@@ -33,10 +33,10 @@ func checkDone(courseId string) {
 		return
 	}
 
-	d := path.Join(config.DownloadTo, courseName)
+	d := filepath.Join(config.DownloadTo, courseName)
 
-	f1 := path.Join(d, ".done")
-	f2 := path.Join(d, ".meta", "DONE")
+	f1 := filepath.Join(d, ".done")
+	f2 := filepath.Join(d, ".meta", "DONE")
 
 	if isExist(f1) || isExist(f2) {
 		fmt.Printf(tmpl, courseId, "DONE", courseName)

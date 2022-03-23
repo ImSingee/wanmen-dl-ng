@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
-	"path"
+	"path/filepath"
 	"runtime"
 )
 
@@ -42,7 +42,7 @@ func download(courseId string, downloadTo string, full bool, concurrency int) er
 	defer dashboard.Close()
 
 	if downloadTo == "" {
-		downloadTo = path.Join(config.DownloadTo, courseName)
+		downloadTo = filepath.Join(config.DownloadTo, courseName)
 	}
 
 	updateProgress := func(state string, params ...interface{}) {

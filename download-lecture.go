@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 // target 为下载目标的绝对路径
@@ -23,7 +23,7 @@ func downloadLecture(lectureID string, lecturePath string, metaPrefix string, fu
 		return -1, err
 	}
 
-	_ = os.MkdirAll(path.Dir(lecturePath), 0755)
+	_ = os.MkdirAll(filepath.Dir(lecturePath), 0755)
 	_ = os.WriteFile(metaPrefix+".json", info.RawJsonBody, 0644)
 
 	target := lecturePath

@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 func downloadDoc(docInfo *CourseInfo_Document, saveTo string, metaPrefix string, updateProgress updateProgressFunc) (err error) {
@@ -18,7 +18,7 @@ func downloadDoc(docInfo *CourseInfo_Document, saveTo string, metaPrefix string,
 		}
 	}()
 
-	_ = os.MkdirAll(path.Dir(saveTo), 0755)
+	_ = os.MkdirAll(filepath.Dir(saveTo), 0755)
 
 	req, err := http.NewRequest("GET", docInfo.URL, nil)
 	if err != nil {

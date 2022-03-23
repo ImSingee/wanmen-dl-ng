@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -13,11 +13,11 @@ import (
 type updateProgressFunc func(action string, params ...interface{})
 
 func DownloadCourse(courseId, courseDir string, full bool, concurrency int, updateProgress updateProgressFunc) error {
-	metaDir := path.Join(courseDir, ".meta")
+	metaDir := filepath.Join(courseDir, ".meta")
 	_ = os.MkdirAll(metaDir, 0755)
 
 	// 全课程自动跳过
-	if isExist(path.Join(metaDir, "DONE")) || isExist(path.Join(courseDir, ".done")) {
+	if isExist(filepath.Join(metaDir, "DONE")) || isExist(filepath.Join(courseDir, ".done")) {
 		updateProgress("skip")
 		return nil
 	}
@@ -29,7 +29,7 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 	}
 	updateProgress("init-lectures", courseLectures)
 	// 将原始 lectures 信息存储
-	_ = os.WriteFile(path.Join(metaDir, "lectures.json"), courseLectures.Raw, 0644)
+	_ = os.WriteFile(filepath.Join(metaDir, "lectures.json"), courseLectures.Raw, 0644)
 
 	// 请求课程的文档信息
 	courseInfo, err := apiGetWanmenCourseInfo(courseId)
@@ -39,7 +39,7 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 	courseDocuments := courseInfo.Documents
 	updateProgress("init-documents", courseDocuments)
 	// 将原始课程信息存储
-	_ = os.WriteFile(path.Join(metaDir, "info.json"), courseInfo.Raw, 0644)
+	_ = os.WriteFile(filepath.Join(metaDir, "info.json"), courseInfo.Raw, 0644)
 
 	wg := sync.WaitGroup{}
 
@@ -51,7 +51,7 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 
 		for i, chapter := range courseLectures.Chapters {
 			chapter.Index = i + 1
-			chapterdir := path.Join(courseDir, fmt.Sprintf("%d - %s", i+1, cleanName(chapter.Name)))
+			chapterdir := filepath.Join(courseDir, fmt.Sprintf("%d - %s", i+1, cleanName(chapter.Name)))
 
 			for j, lecture := range chapter.Children {
 				lecture.Index = j + 1
@@ -61,7 +61,7 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 						Chapter:     chapter,
 						ChapterDir:  chapterdir,
 						Lecture:     lecture,
-						LecturePath: path.Join(chapterdir, fmt.Sprintf("%d-%d %s.mp4", i+1, j+1, cleanName(lecture.Name))),
+						LecturePath: filepath.Join(chapterdir, fmt.Sprintf("%d-%d %s.mp4", i+1, j+1, cleanName(lecture.Name))),
 					},
 				}
 			}
@@ -77,7 +77,7 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 				MetaDir: metaDir,
 				Doc: &DocDownloadTask{
 					Document:     doc,
-					DocumentPath: path.Join(courseDir, "资料", cleanName(fmt.Sprintf("%d - %s.%s", i+1, doc.Name, doc.Ext))),
+					DocumentPath: filepath.Join(courseDir, "资料", cleanName(fmt.Sprintf("%d - %s.%s", i+1, doc.Name, doc.Ext))),
 				},
 			}
 		}
@@ -139,7 +139,7 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 
 	wg.Wait()
 
-	_ = os.WriteFile(path.Join(metaDir, "DONE"), []byte(time.Now().Format(time.RFC3339)), 0644)
+	_ = os.WriteFile(filepath.Join(metaDir, "DONE"), []byte(time.Now().Format(time.RFC3339)), 0644)
 
 	return nil
 }
