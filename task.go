@@ -23,9 +23,9 @@ func (task *DownloadTask) Path() string {
 
 func (task *DownloadTask) MetaPrefix() string {
 	if task.Course != nil {
-		return filepath.Join(task.MetaDir, fmt.Sprintf("%s:%s", task.Course.Chapter.ID, task.Course.Lecture.ID))
+		return filepath.Join(task.MetaDir, fmt.Sprintf("%s-%s", task.Course.Chapter.ID, task.Course.Lecture.ID))
 	} else {
-		return filepath.Join(task.MetaDir, fmt.Sprintf("doc:%s", task.Doc.Document.Key))
+		return filepath.Join(task.MetaDir, fmt.Sprintf("doc-%s", task.Doc.Document.Key))
 	}
 }
 
