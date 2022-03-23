@@ -32,7 +32,7 @@ var cmdDownload = &cobra.Command{
 }
 
 func download(courseId string, downloadTo string, forceLevel int, full bool, noConvert bool, concurrency int) error {
-	if noConvert && ffmpegPath == "" {
+	if !noConvert && ffmpegPath == "" {
 		return errors.New("ffmpeg is not installed")
 	}
 
