@@ -12,12 +12,12 @@ import (
 
 type updateProgressFunc func(action string, params ...interface{})
 
-func DownloadCourse(courseId, courseDir string, full bool, concurrency int, updateProgress updateProgressFunc) error {
+func DownloadCourse(courseId, courseDir string, forceLevel int, full bool, concurrency int, updateProgress updateProgressFunc) error {
 	metaDir := filepath.Join(courseDir, ".meta")
 	_ = os.MkdirAll(metaDir, 0755)
 
 	// 全课程自动跳过
-	if isExist(filepath.Join(metaDir, "DONE")) || isExist(filepath.Join(courseDir, ".done")) {
+	if forceLevel == 0 && isExist(filepath.Join(metaDir, "DONE")) || isExist(filepath.Join(courseDir, ".done")) {
 		updateProgress("skip")
 		return nil
 	}
@@ -105,7 +105,7 @@ func DownloadCourse(courseId, courseDir string, full bool, concurrency int, upda
 
 				updateProgress("start", workerId, task)
 
-				if !task.ForceReDownload && isExist(task.Path()) {
+				if forceLevel != 2 && !task.ForceReDownload && isExist(task.Path()) {
 					updateProgress("skip-task", workerId, task)
 					continue
 				}

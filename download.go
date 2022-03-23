@@ -8,6 +8,7 @@ import (
 	"runtime"
 )
 
+var flagForce int
 var flagConcurrency int
 var flagFull bool
 var flagDownloadTo string
@@ -25,12 +26,11 @@ var cmdDownload = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		courseId := args[0]
-		return download(courseId, flagDownloadTo, flagFull, flagConcurrency)
+		return download(courseId, flagDownloadTo, flagForce, flagFull, flagConcurrency)
 	},
 }
 
-func download(courseId string, downloadTo string, full bool, concurrency int) error {
-
+func download(courseId string, downloadTo string, forceLevel int, full bool, concurrency int) error {
 	courseName, ok := GetName(courseId)
 	if !ok {
 		return errors.New("unknown course, please register first")
@@ -49,12 +49,13 @@ func download(courseId string, downloadTo string, full bool, concurrency int) er
 		actionHandler <- DashboardAction{state, params}
 	}
 
-	return DownloadCourse(courseId, downloadTo, full, concurrency, updateProgress)
+	return DownloadCourse(courseId, downloadTo, forceLevel, full, concurrency, updateProgress)
 }
 
 func init() {
 	app.AddCommand(cmdDownload)
 
+	cmdDownload.Flags().IntVarP(&flagForce, "force", "f", 0, "跳过去重（0-不跳过, 1-跳过课程检测, 2-跳过文件检测)")
 	cmdDownload.Flags().BoolVar(&flagFull, "full", false, "不去除万门广告")
 	cmdDownload.Flags().StringVarP(&flagDownloadTo, "to", "t", "", "下载到的路径，留空代表配置中的路径+课程名称")
 	cmdDownload.Flags().IntVarP(&flagConcurrency, "concurrency", "c", runtime.NumCPU()*4, "并发数，默认为 CPU 数量 * 4")
