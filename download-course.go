@@ -12,7 +12,7 @@ import (
 
 type updateProgressFunc func(action string, params ...interface{})
 
-func DownloadCourse(courseId, courseDir string, forceLevel int, full bool, concurrency int, updateProgress updateProgressFunc) error {
+func DownloadCourse(courseId, courseDir string, forceLevel int, full bool, concurrency int, noConvert bool, updateProgress updateProgressFunc) error {
 	metaDir := filepath.Join(courseDir, ".meta")
 	_ = os.MkdirAll(metaDir, 0755)
 
@@ -105,9 +105,18 @@ func DownloadCourse(courseId, courseDir string, forceLevel int, full bool, concu
 
 				updateProgress("start", workerId, task)
 
-				if forceLevel != 2 && !task.ForceReDownload && isExist(task.Path()) {
-					updateProgress("skip-task", workerId, task)
-					continue
+				if forceLevel != 2 && !task.ForceReDownload {
+					if isExist(task.Path()) {
+						updateProgress("skip-task", workerId, task)
+						continue
+					}
+					if task.Course != nil {
+						partDonePath := task.Course.LecturePath + ".stream.mp4"
+						if isExist(partDonePath) {
+							updateProgress("skip-task", workerId, task)
+							continue
+						}
+					}
 				}
 
 				if task.Course != nil {
@@ -115,7 +124,7 @@ func DownloadCourse(courseId, courseDir string, forceLevel int, full bool, concu
 						updateProgress("lecture", workerId, task, a, v)
 					}
 
-					_, err := downloadLecture(task.Course.Lecture.ID, task.Path(), task.MetaPrefix(), false, full, f)
+					_, err := downloadLecture(task.Course.Lecture.ID, task.Path(), task.MetaPrefix(), noConvert, full, f)
 					if err != nil {
 						updateProgress("error", workerId, task, err)
 						continue

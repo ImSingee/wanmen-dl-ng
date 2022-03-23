@@ -148,6 +148,6 @@ func init() {
 	var err error
 	ffmpegPath, err = exec.LookPath(ffmpegName)
 	if err != nil {
-		panic("Cannot found ffmpeg!")
+		ffmpegPath = ""
 	}
 }
