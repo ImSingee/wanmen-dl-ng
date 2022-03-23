@@ -15,7 +15,7 @@ var flagOffline bool
 var flagUpdateMeta bool
 
 var cmdVerify = &cobra.Command{
-	Use:   "verify",
+	Use:   "verify <course-id> ...",
 	Short: "Check course's integrity",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
@@ -144,6 +144,7 @@ func verify(courseId string, courseDir string, offline, updateMeta bool) bool {
 	// 检查 DONE
 	donePath := filepath.Join(metaDir, "DONE")
 	donePathLegacy := filepath.Join(courseDir, ".done")
+	forceDonePath := filepath.Join(metaDir, "FORCE-DONE")
 	if isExist(donePathLegacy) {
 		if isExist(donePath) {
 			_ = os.Remove(donePathLegacy)
@@ -160,8 +161,16 @@ func verify(courseId string, courseDir string, offline, updateMeta bool) bool {
 	} else {
 		// 应该不存在 DONE，存在则删除
 		if isExist(donePath) {
-			fmt.Println("DONE marker is removed from course automatically (due to not-pass-verify)")
-			_ = os.Remove(donePath)
+			if isExist(forceDonePath) {
+				fmt.Println("DONE marker is NOT removed due to force-done")
+				fmt.Println("Run following commands to remove the flag")
+				fmt.Println("> rm", donePath)
+				fmt.Println("> rm", forceDonePath)
+			} else {
+				fmt.Println("DONE marker is removed from course automatically (due to not-pass-verify)")
+				_ = os.Remove(donePath)
+			}
+
 		}
 	}
 
