@@ -2,3 +2,4 @@
 config.json
 names.json
 to_download*
+dist/

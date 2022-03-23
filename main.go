@@ -5,8 +5,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var version string
+
 var app = &cobra.Command{
 	Use:           "wanmen-dl",
+	Version:       version,
 	Short:         "直接下载某门课程",
 	SilenceErrors: true,
 	SilenceUsage:  true,
