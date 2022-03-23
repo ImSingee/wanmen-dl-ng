@@ -24,6 +24,10 @@ var nameReplacer = strings.NewReplacer(
 	"|", " ",
 )
 
+func oldCleanName(name string) string {
+	return nameReplacer.Replace(name)
+}
+
 func cleanName(name string) string {
 	return strings.TrimSpace(nameReplacer.Replace(name))
 }

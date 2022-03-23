@@ -141,12 +141,25 @@ func verify(courseId string, courseDir string, noConvert, offline, updateMeta bo
 	for i, chapter := range courseLectures.Chapters {
 		chapterdir := filepath.Join(courseDir, fmt.Sprintf("%d - %s", i+1, cleanName(chapter.Name)))
 
+		// fix oldChapterDir
+		oldChapterDir := filepath.Join(courseDir, fmt.Sprintf("%d - %s", i+1, oldCleanName(chapter.Name)))
+		if oldChapterDir != chapterdir {
+			_ = os.Rename(oldChapterDir, chapterdir)
+		}
+
 		for j, lecture := range chapter.Children {
 			lecturePath := filepath.Join(chapterdir, fmt.Sprintf("%d-%d %s.mp4", i+1, j+1, cleanName(lecture.Name)))
+			lecturePartDonePath := lecturePath + ".stream.mp4"
+
+			// fix oldLecturePath
+			oldLecturePath := filepath.Join(chapterdir, fmt.Sprintf("%d-%d %s.mp4", i+1, j+1, oldCleanName(lecture.Name)))
+			if lecturePath != oldLecturePath {
+				_ = os.Rename(oldLecturePath, lecturePath)
+				oldLecturePartDonePath := oldLecturePath + ".stream.mp4"
+				_ = os.Rename(oldLecturePartDonePath, lecturePartDonePath)
+			}
 
 			if noConvert {
-				lecturePartDonePath := lecturePath + ".stream.mp4"
-
 				if !isExist(lecturePath) && !isExist(lecturePartDonePath) {
 					redPrintf("Lecture %s not exist\n", lecturePartDonePath)
 					pass = false
@@ -165,6 +178,12 @@ func verify(courseId string, courseDir string, noConvert, offline, updateMeta bo
 		// 万门的某些课程 ext 会出现两次
 		doc.Name = strings.TrimSuffix(doc.Name, "."+doc.Ext)
 		docPath := filepath.Join(courseDir, "资料", cleanName(fmt.Sprintf("%d - %s.%s", i+1, doc.Name, doc.Ext)))
+
+		// 修正 doc 名称
+		oldDocPath := filepath.Join(courseDir, "资料", oldCleanName(fmt.Sprintf("%d - %s.%s", i+1, doc.Name, doc.Ext)))
+		if oldDocPath != docPath {
+			_ = os.Rename(oldDocPath, docPath)
+		}
 
 		if !isExist(docPath) {
 			redPrintf("Document %s not exist\n", docPath)
