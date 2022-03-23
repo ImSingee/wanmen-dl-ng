@@ -181,6 +181,7 @@ func verify(courseId string, courseDir string, noConvert, offline, updateMeta bo
 	// 检查文档
 	for i, doc := range courseInfo.Documents {
 		// 万门的某些课程 ext 会出现两次
+		originDocName := doc.Name
 		doc.Name = strings.TrimSuffix(doc.Name, "."+doc.Ext)
 		docPath := filepath.Join(courseDir, "资料", cleanName(fmt.Sprintf("%d - %s.%s", i+1, doc.Name, doc.Ext)))
 
@@ -188,6 +189,16 @@ func verify(courseId string, courseDir string, noConvert, offline, updateMeta bo
 		oldDocPath := filepath.Join(courseDir, "资料", oldCleanName(fmt.Sprintf("%d - %s.%s", i+1, doc.Name, doc.Ext)))
 		if oldDocPath != docPath {
 			_ = os.Rename(oldDocPath, docPath)
+		}
+
+		// 修正之前 ext 可能两次的名称
+		veryOldDocPath := filepath.Join(courseDir, "资料", oldCleanName(fmt.Sprintf("%d - %s.%s", i+1, originDocName, doc.Ext)))
+		if veryOldDocPath != docPath {
+			if isExist(docPath) {
+				_ = os.Remove(veryOldDocPath)
+			} else {
+				_ = os.Rename(veryOldDocPath, docPath)
+			}
 		}
 
 		if !isExist(docPath) {

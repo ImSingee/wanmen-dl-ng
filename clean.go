@@ -64,7 +64,8 @@ func cleanByPath(p string, dryRun bool) error {
 
 		if strings.HasSuffix(name, ".part") ||
 			strings.HasSuffix(name, ".ffmpeg.mp4") ||
-			strings.HasSuffix(name, ".part.mp4") {
+			strings.HasSuffix(name, ".part.mp4") ||
+			strings.HasSuffix(name, ".tmp") {
 
 			fmt.Print("Remove ", path)
 
