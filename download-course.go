@@ -112,7 +112,7 @@ func DownloadCourse(courseId, courseDir string, forceLevel int, full bool, concu
 					}
 					if task.Course != nil {
 						partDonePath := task.Course.LecturePath + ".stream.mp4"
-						if isExist(partDonePath) {
+						if noConvert && isExist(partDonePath) {
 							updateProgress("skip-task", workerId, task)
 							continue
 						}
