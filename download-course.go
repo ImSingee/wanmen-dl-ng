@@ -115,7 +115,7 @@ func DownloadCourse(courseId, courseDir string, forceLevel int, full bool, concu
 						updateProgress("lecture", workerId, task, a, v)
 					}
 
-					_, err := downloadLecture(task.Course.Lecture.ID, task.Path(), task.MetaPrefix(), full, f)
+					_, err := downloadLecture(task.Course.Lecture.ID, task.Path(), task.MetaPrefix(), false, full, f)
 					if err != nil {
 						updateProgress("error", workerId, task, err)
 						continue

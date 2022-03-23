@@ -14,7 +14,7 @@ func TestDownloadLecture(t *testing.T) {
 		fmt.Printf("%v %v\n", state, params)
 	}
 
-	code, err := downloadLecture("5aded0c1b6917f44d5121710", target, metaPrefix, false, updateProgress)
+	code, err := downloadLecture("5aded0c1b6917f44d5121710", target, metaPrefix, false, false, updateProgress)
 	tt.AssertIsNotError(t, err)
 	tt.AssertEqual(t, code, 0)
 }

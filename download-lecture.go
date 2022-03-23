@@ -12,7 +12,7 @@ import (
 // f 用来返回当前的下载进度
 // 返回值的第一个参数代表下载状况，0 代表正常，1-4 代表下载到了非超清版本，-1 代表无法下载
 // 当且仅当第一个返回值为 -1 时，会带有 error 参数
-func downloadLecture(lectureID string, lecturePath string, metaPrefix string, full bool, f updateProgressFunc) (int, error) {
+func downloadLecture(lectureID string, lecturePath string, metaPrefix string, noConvert bool, full bool, f updateProgressFunc) (int, error) {
 	info, err := apiGetWanmenLectureInfo(lectureID)
 	if err != nil {
 		err = fmt.Errorf("cannot get lecture info: %v", err)
@@ -30,7 +30,7 @@ func downloadLecture(lectureID string, lecturePath string, metaPrefix string, fu
 
 	var latestError error
 	for i, url := range info.VideoStream.ToDownload() {
-		err := tryDownloadLectureM3U8(url, target, full, f)
+		err := tryDownloadLectureM3U8(url, target, noConvert, full, f)
 		if err == nil {
 			return i, nil
 		}
