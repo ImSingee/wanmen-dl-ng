@@ -15,8 +15,8 @@ builds:
       - linux
       - windows
       - darwin
-    gcflags:
-      - all=-trimpath={{.Env.GOPATH}}
+    flags:
+      - -trimpath
 archives:
   - replacements:
       darwin: Darwin
