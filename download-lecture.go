@@ -17,7 +17,7 @@ func downloadLecture(lectureID string, lecturePath string, metaPrefix string, no
 	partDonePath := target + ".stream.mp4"
 
 	if isExist(partDonePath) { // 简单转换为 mp4
-		err := convertToMp4(partDonePath, target, f)
+		err := convertToMp4(target, partDonePath, f)
 		if err != nil {
 			err = fmt.Errorf("cannot convert to mp4: %w", err)
 
