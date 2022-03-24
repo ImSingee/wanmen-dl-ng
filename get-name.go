@@ -6,6 +6,9 @@ import (
 	"strings"
 )
 
+var flagPrefix string
+var flagShowId bool
+
 var cmdGetName = &cobra.Command{
 	Use:   "get-name <id> ...",
 	Short: "Use id get name",
@@ -20,7 +23,13 @@ var cmdGetName = &cobra.Command{
 				return fmt.Errorf("%s not found", id)
 			}
 
-			fmt.Println(strings.TrimSpace(name))
+			name = strings.TrimSpace(name)
+
+			if flagShowId {
+				fmt.Printf("%s%s %s\n", flagPrefix, id, name)
+			} else {
+				fmt.Printf("%s%s\n", flagPrefix, name)
+			}
 		}
 
 		return nil
@@ -29,4 +38,7 @@ var cmdGetName = &cobra.Command{
 
 func init() {
 	app.AddCommand(cmdGetName)
+
+	cmdGetName.Flags().BoolVarP(&flagShowId, "show-id", "i", false, "show id")
+	cmdGetName.Flags().StringVarP(&flagPrefix, "prefix", "p", "", "prefix")
 }
