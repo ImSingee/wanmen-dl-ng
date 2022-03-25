@@ -41,7 +41,7 @@ func downloadSosDoc(courseIds []string, concurrency, forceLevel int) {
 				continue
 			}
 
-			courseDir := filepath.Join(config.DownloadTo, name)
+			courseDir := filepath.Join(config.DownloadTo, cleanName(name))
 
 			sosPath := filepath.Join(config.SosDir, sosCleanName(sosName))
 			if !isExist(sosPath) {
