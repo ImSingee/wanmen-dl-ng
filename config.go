@@ -10,6 +10,8 @@ type Config struct {
 	UserAgent     string
 	DownloadTo    string
 	NameMap       map[string]string
+	SosDir        string
+	SodDownloadTo string
 }
 
 var config = &Config{
@@ -17,6 +19,8 @@ var config = &Config{
 	UserAgent:     `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36`,
 	DownloadTo:    "/data/万门",
 	NameMap:       map[string]string{},
+	SosDir:        "/data/sos",
+	SodDownloadTo: "/data/sos-download",
 }
 
 func init() {
