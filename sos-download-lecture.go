@@ -66,14 +66,18 @@ func parseSosM3U8Data(data []byte) ([]string, error) {
 func sosDownloadLectureM3U8(info *SosLectureInfo, target string, noConvert bool, full bool, reportProgress updateProgressFunc) error {
 	partDonePath := target + ".stream.mp4"
 
-	legacyPartDonePath := info.Path + ".stream.mp4"
-	if !isExist(partDonePath) && isExist(legacyPartDonePath) {
+	legacyPartDonePath1 := info.Path + ".stream.mp4"
+	if !isExist(partDonePath) && isExist(legacyPartDonePath1) {
 		_ = os.MkdirAll(filepath.Dir(partDonePath), 0755)
-		_ = os.Rename(legacyPartDonePath, partDonePath)
+		_ = os.Rename(legacyPartDonePath1, partDonePath)
+	}
+	legacyPartDonePath2 := info.Path + ".part.stream.mp4"
+	if !isExist(partDonePath) && isExist(legacyPartDonePath2) {
+		_ = os.MkdirAll(filepath.Dir(partDonePath), 0755)
+		_ = os.Rename(legacyPartDonePath2, partDonePath)
 	}
 
 	if !isExist(partDonePath) {
-
 		// 下载 m3u8 文件，返回 ts 列表
 		tsList, err := parseSosM3U8Data(info.Content)
 		if err != nil {
