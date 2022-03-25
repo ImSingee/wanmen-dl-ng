@@ -36,10 +36,8 @@ func parseSosM3U8(metapath string) ([]string, error) {
 
 // target 为下载目标的绝对路径
 // full 为 true 代表不会去除首尾万门的「广告」
-func downloadSosM3U8(metapath string, target string, full bool, reportProgress updateProgressFunc) error {
-	partDonePath := target + ".stream.mp4"
-
-	if !isExist(partDonePath) {
+func downloadSosM3U8(metapath string, streamDoneTo string, full bool, reportProgress updateProgressFunc) error {
+	if !isExist(streamDoneTo) {
 		// 下载 m3u8 文件，返回 ts 列表
 		tsList, err := parseSosM3U8(metapath)
 		if err != nil {
@@ -51,7 +49,7 @@ func downloadSosM3U8(metapath string, target string, full bool, reportProgress u
 		}
 
 		// 临时的 ts 拼接下载路径
-		partFile := target + ".part"
+		partFile := streamDoneTo + ".part"
 		f, err := os.Create(partFile)
 		if err != nil {
 			return fmt.Errorf("cannot create and open part file: %v", err)
@@ -89,7 +87,7 @@ func downloadSosM3U8(metapath string, target string, full bool, reportProgress u
 			return fmt.Errorf("cannot close part file: %w", err)
 		}
 
-		err = os.Rename(partFile, partDonePath)
+		err = os.Rename(partFile, streamDoneTo)
 		if err != nil {
 			return fmt.Errorf("cannot rename part file: %w", err)
 		}
@@ -166,7 +164,7 @@ func sosDownload(sosPath string, concurrency int) {
 
 				fmt.Println("start", workerId, task)
 
-				downloadTo := task + ".part"
+				// stream done to
 				doneTo := task + ".stream.mp4"
 
 				if isExist(doneTo) {
@@ -179,7 +177,7 @@ func sosDownload(sosPath string, concurrency int) {
 						fmt.Println("lecture", workerId, task, a, v)
 					}
 
-					err := downloadSosM3U8(task, downloadTo, false, f)
+					err := downloadSosM3U8(task, doneTo, false, f)
 
 					if err != nil {
 						fmt.Println("error", workerId, task, err)
