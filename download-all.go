@@ -7,8 +7,9 @@ import (
 )
 
 var cmdDownloadAll = &cobra.Command{
-	Use:  "download-all [<filename>]",
-	Args: cobraParseList,
+	Use:     "download-all [<filename>]",
+	Aliases: []string{"da"},
+	Args:    cobraParseList,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		errorsMap := map[string]error{}
 
@@ -36,6 +37,7 @@ var cmdDownloadAll = &cobra.Command{
 func init() {
 	app.AddCommand(cmdDownloadAll)
 
+	cmdDownloadAll.Flags().BoolVar(&flagSos, "sos", false, "")
 	cmdDownloadAll.Flags().BoolVar(&flagOffline, "offline", false, "")
 	cmdDownloadAll.Flags().BoolVarP(&flagSkipFFMpeg, "skip-ffmpeg", "m", false, "")
 	cmdDownloadAll.Flags().IntVarP(&flagForce, "force", "f", 0, "跳过去重（0-不跳过, 1-跳过课程检测, 2-跳过文件检测)")

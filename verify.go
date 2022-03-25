@@ -16,8 +16,9 @@ var flagOffline bool
 var flagUpdateMeta bool
 
 var cmdVerify = &cobra.Command{
-	Use:   "verify <course-id> ...",
-	Short: "Check course's integrity",
+	Use:     "verify <course-id> ...",
+	Aliases: []string{"v"},
+	Short:   "Check course's integrity",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
 			return fmt.Errorf("no course specified")

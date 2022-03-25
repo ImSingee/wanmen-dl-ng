@@ -7,7 +7,8 @@ import (
 )
 
 var cmdCheck = &cobra.Command{
-	Use: "check <course-id>",
+	Use:     "check <course-id>",
+	Aliases: []string{"c"},
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
 			return fmt.Errorf("requires course-id")

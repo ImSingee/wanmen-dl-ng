@@ -6,8 +6,9 @@ import (
 )
 
 var cmdVerifyAll = &cobra.Command{
-	Use:  "verify-all [<filename>]",
-	Args: cobraParseList,
+	Use:     "verify-all [<filename>]",
+	Aliases: []string{"va"},
+	Args:    cobraParseList,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		anyError := false
 

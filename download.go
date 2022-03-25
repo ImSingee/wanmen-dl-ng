@@ -17,7 +17,8 @@ var flagFull bool
 var flagDownloadTo string
 
 var cmdDownload = &cobra.Command{
-	Use: "download <course-id>",
+	Use:     "download <course-id>",
+	Aliases: []string{"d"},
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
 			return fmt.Errorf("requires course-id")
