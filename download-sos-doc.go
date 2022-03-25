@@ -118,7 +118,7 @@ func downloadSosDoc(courseIds []string, concurrency, forceLevel int) {
 
 				err := downloadDoc(task.Doc.Document, task.Path(), task.MetaPrefix(), f)
 				if err != nil {
-					redPrintf("%s %v %v %v\n", "error", workerId, task, err)
+					fmt.Println("ERROR!!!", workerId, task.Path(), err)
 					continue
 				}
 
