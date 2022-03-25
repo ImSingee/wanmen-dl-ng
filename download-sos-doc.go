@@ -14,7 +14,7 @@ import (
 var cmdDownloadSosDoc = &cobra.Command{
 	Use: "download-sos-doc",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		downloadSosDoc(args, 0, 2)
+		downloadSosDoc(args, 0, 0)
 		return nil
 	},
 }
