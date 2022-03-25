@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
@@ -31,16 +32,14 @@ func SosDownloadCourse(courseId, courseDir string, forceLevel int, full bool, co
 	}
 
 	var courseLectures *CourseLectures
-	//var courseInfo *CourseInfo // NODOC
+	var courseInfo *CourseInfo
 	var err error
 
-	// NODOC
-
 	courseLectures = &CourseLectures{}
-	//courseInfo = &CourseInfo{} // NODOC
+	courseInfo = &CourseInfo{}
 
 	lecturesMetaPath := filepath.Join(metaDir, "lectures.json")
-	//infoMetaPath := filepath.Join(metaDir, "info.json")  // NODOC
+	infoMetaPath := filepath.Join(metaDir, "info.json")
 
 	//err = exjson.Read(lecturesMetaPath, &courseLectures.Chapters)
 	if true { // err != nil {
@@ -78,16 +77,29 @@ func SosDownloadCourse(courseId, courseDir string, forceLevel int, full bool, co
 
 	}
 
-	// NODOC
 	//err = exjson.Read(infoMetaPath, courseInfo)
-	//if err != nil {
-	//	return fmt.Errorf("cannot load info meta file %s: %v", infoMetaPath, err)
-	//}
+	if true { // err != nil {
+		// 利用 sos 路径恢复
+		sosInfoPath := filepath.Join(sosPath, "info.json")
+
+		err = exjson.Read(sosInfoPath, &courseInfo)
+		if err != nil {
+			return fmt.Errorf("cannot load lectures sos meta file %s: %v", sosInfoPath, err)
+		}
+
+		// save if need
+		_ = CopyFile(sosInfoPath, filepath.Join(metaDir, "info.sos.json"))
+		if !isExist(infoMetaPath) {
+			_ = CopyFile(sosInfoPath, infoMetaPath)
+
+		}
+
+	}
 
 	updateProgress("init-lectures", courseLectures)
 
-	//courseDocuments := courseInfo.Documents // NODOC
-	//updateProgress("init-documents", courseDocuments)
+	courseDocuments := courseInfo.Documents
+	updateProgress("init-documents", courseDocuments)
 
 	wg := sync.WaitGroup{}
 
@@ -117,21 +129,20 @@ func SosDownloadCourse(courseId, courseDir string, forceLevel int, full bool, co
 			}
 		}
 
-		// NODOC
-		//for i, doc := range courseDocuments {
-		//	doc.Index = i + 1
-		//
-		//	// 万门的某些课程 ext 会出现两次
-		//	doc.Name = strings.TrimSuffix(doc.Name, "."+doc.Ext)
-		//
-		//	queue <- &DownloadTask{
-		//		MetaDir: metaDir,
-		//		Doc: &DocDownloadTask{
-		//			Document:     doc,
-		//			DocumentPath: filepath.Join(courseDir, "资料", cleanName(fmt.Sprintf("%d - %s.%s", i+1, doc.Name, doc.Ext))),
-		//		},
-		//	}
-		//}
+		for i, doc := range courseDocuments {
+			doc.Index = i + 1
+
+			// 万门的某些课程 ext 会出现两次
+			doc.Name = strings.TrimSuffix(doc.Name, "."+doc.Ext)
+
+			queue <- &DownloadTask{
+				MetaDir: metaDir,
+				Doc: &DocDownloadTask{
+					Document:     doc,
+					DocumentPath: filepath.Join(courseDir, "资料", cleanName(fmt.Sprintf("%d - %s.%s", i+1, doc.Name, doc.Ext))),
+				},
+			}
+		}
 
 		close(queue)
 	}()
@@ -181,16 +192,15 @@ func SosDownloadCourse(courseId, courseDir string, forceLevel int, full bool, co
 						continue
 					}
 				} else { // task.Doc
-					// NODOC
-					//f := func(a string, v ...interface{}) {
-					//	updateProgress("doc", workerId, task, a, v)
-					//}
-					//
-					//err := downloadDoc(task.Doc.Document, task.Path(), task.MetaPrefix(), f)
-					//if err != nil {
-					//	updateProgress("error", workerId, task, err)
-					//	continue
-					//}
+					f := func(a string, v ...interface{}) {
+						updateProgress("doc", workerId, task, a, v)
+					}
+
+					err := downloadDoc(task.Doc.Document, task.Path(), task.MetaPrefix(), f)
+					if err != nil {
+						updateProgress("error", workerId, task, err)
+						continue
+					}
 				}
 
 				updateProgress("done", workerId, task)
