@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/ImSingee/go-ex/exjson"
 	"os"
@@ -45,11 +46,32 @@ func SosDownloadCourse(courseId, courseDir string, forceLevel int, full bool, co
 	if err != nil {
 		// 利用 sos 路径恢复
 		sosLecturesMetaPath := filepath.Join(sosPath, "lectures.json")
-		err = exjson.Read(sosLecturesMetaPath, &courseLectures.Chapters)
 
+		tempmap := map[string]interface{}{}
+
+		err = exjson.Read(sosLecturesMetaPath, &tempmap)
 		if err != nil {
-			return fmt.Errorf("cannot load lectures meta file %s: %v", lecturesMetaPath, err)
+			return fmt.Errorf("cannot load lectures sos meta file %s: %v", sosLecturesMetaPath, err)
 		}
+
+		if _, ok := tempmap["lectures"]; !ok {
+			return fmt.Errorf("cannot load lectures sos meta file %s: no lectures key", sosLecturesMetaPath)
+		}
+
+		// remarshal
+		origin, err := json.Marshal(tempmap["lectures"])
+		if err != nil {
+			return fmt.Errorf("cannot re-marshal lectures meta file %s: %v", sosLecturesMetaPath, err)
+		}
+
+		// re-unmarshal
+		err = json.Unmarshal(origin, &courseLectures.Chapters)
+		if err != nil {
+			return fmt.Errorf("cannot re-unmarshal lectures meta file %s: %v", sosLecturesMetaPath, err)
+		}
+
+		// save
+		_ = os.WriteFile(lecturesMetaPath, origin, 0644)
 	}
 
 	// NODOC
