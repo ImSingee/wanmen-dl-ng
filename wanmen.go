@@ -141,12 +141,14 @@ type CourseInfo_Chapter struct {
 	Name     string                `json:"name"`
 	Order    int                   `json:"order"`
 	Hide     bool                  `json:"hide"`
+	Prefix   string                `json:"prefix"`
 	Children []*CourseInfo_Lecture `json:"children"`
 }
 
 type CourseInfo_Lecture struct {
 	Index         int     // 由外部赋值, base-1
 	ID            string  `json:"_id"`
+	Prefix        string  `json:"prefix"`
 	Name          string  `json:"name"`
 	ParentId      string  `json:"parentId"`
 	CourseId      string  `json:"courseId"`

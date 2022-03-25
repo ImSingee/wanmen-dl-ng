@@ -43,6 +43,9 @@ type CourseDownloadTask struct {
 	ChapterDir  string
 	Lecture     *CourseInfo_Lecture
 	LecturePath string
+
+	// 以下只有 sos 模式会用到
+	SosLecturePath string
 }
 
 type DocDownloadTask struct {

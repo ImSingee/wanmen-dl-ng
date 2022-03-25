@@ -19,19 +19,7 @@ func parseSosM3U8(metapath string) ([]string, error) {
 		return nil, fmt.Errorf("cannot read m3u8 file download request: %v", err)
 	}
 
-	lines := strings.Split(strings.TrimSpace(string(all)), "\n")
-	result := make([]string, 0, len(lines))
-
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-
-		result = append(result, line)
-	}
-
-	return result, nil
+	return parseSosM3U8Data(all)
 }
 
 // target 为下载目标的绝对路径
@@ -109,13 +97,13 @@ var cmdDownloadSos = &cobra.Command{
 			sosPath := filepath.Join(config.SosDir, sosCleanName(name))
 
 			fmt.Println("Download", courseId, sosPath)
-			sosDownload(sosPath, 0)
+			sosDownload1(sosPath, 0)
 			fmt.Println("Download", courseId, "DONE", sosPath)
 		}
 	},
 }
 
-func sosDownload(sosPath string, concurrency int) {
+func sosDownload1(sosPath string, concurrency int) {
 	queue := make(chan string, 256)
 
 	wg := sync.WaitGroup{}

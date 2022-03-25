@@ -44,7 +44,7 @@ var cmdDownloadM3U8 = &cobra.Command{
 			sosPath := filepath.Join(config.SosDir, sosCleanName(name))
 
 			fmt.Println("Download", courseId, sosPath)
-			sosDownload(sosPath, 0)
+			sosDownload1(sosPath, 0)
 			fmt.Println("Download", courseId, "DONE", sosPath)
 		}
 	},

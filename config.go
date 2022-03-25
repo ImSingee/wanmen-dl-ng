@@ -11,7 +11,6 @@ type Config struct {
 	DownloadTo    string
 	NameMap       map[string]string
 	SosDir        string
-	SodDownloadTo string
 }
 
 var config = &Config{
@@ -20,7 +19,6 @@ var config = &Config{
 	DownloadTo:    "/data/万门",
 	NameMap:       map[string]string{},
 	SosDir:        "/data/sos",
-	SodDownloadTo: "/data/sos-download",
 }
 
 func init() {
