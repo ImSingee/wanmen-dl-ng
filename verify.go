@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
 )
@@ -48,24 +47,6 @@ var cmdVerify = &cobra.Command{
 
 func verify(courseId string, courseDir string, noConvert, offline, updateMeta bool) bool {
 	terminal.Start()
-
-	var redPrintf, bluePrintf func(format string, args ...interface{})
-
-	if runtime.GOOS == "windows" {
-		redPrintf = func(format string, args ...interface{}) {
-			fmt.Fprintf(terminal.Out, "[ERROR] "+format, args...)
-		}
-		bluePrintf = func(format string, args ...interface{}) {
-			fmt.Fprintf(terminal.Out, format, args...)
-		}
-	} else {
-		redPrintf = func(format string, args ...interface{}) {
-			fmt.Fprintf(terminal.Out, "\x1b[31m [ERROR] "+format+"\x1b[0m", args...)
-		}
-		bluePrintf = func(format string, args ...interface{}) {
-			fmt.Fprintf(terminal.Out, "\x1b[34m"+format+"\x1b[0m", args...)
-		}
-	}
 
 	courseName, ok := GetName(courseId)
 	if !ok {

@@ -5,8 +5,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/rclone/rclone/lib/terminal"
+	"io"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -94,4 +97,41 @@ func appendJSON(path string, content map[string]interface{}) error {
 	}
 
 	return appendFile(path, string(data))
+}
+
+var redPrintf, bluePrintf func(format string, args ...interface{})
+
+func init() {
+	if runtime.GOOS == "windows" {
+		redPrintf = func(format string, args ...interface{}) {
+			fmt.Fprintf(terminal.Out, "[ERROR] "+format, args...)
+		}
+		bluePrintf = func(format string, args ...interface{}) {
+			fmt.Fprintf(terminal.Out, format, args...)
+		}
+	} else {
+		redPrintf = func(format string, args ...interface{}) {
+			fmt.Fprintf(terminal.Out, "\x1b[31m[ERROR] "+format+"\x1b[0m", args...)
+		}
+		bluePrintf = func(format string, args ...interface{}) {
+			fmt.Fprintf(terminal.Out, "\x1b[34m"+format+"\x1b[0m", args...)
+		}
+	}
+}
+
+func CopyFile(from, to string) error {
+	fromFile, err := os.Open(from)
+	if err != nil {
+		return err
+	}
+	defer fromFile.Close()
+
+	toFile, err := os.OpenFile(to, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer toFile.Close()
+
+	_, err = io.Copy(toFile, fromFile)
+	return err
 }
