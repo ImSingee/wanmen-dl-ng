@@ -14,7 +14,13 @@ var cmdDownloadAll = &cobra.Command{
 		errorsMap := map[string]error{}
 
 		for _, courseId := range list {
-			err := download(courseId, flagDownloadTo, flagForce, flagFull, flagSkipFFMpeg, flagOffline, flagConcurrency)
+			var err error
+			if flagSos {
+				err = sosDownload(courseId, flagDownloadTo, flagForce, flagFull, flagSkipFFMpeg, flagConcurrency)
+			} else {
+				err = download(courseId, flagDownloadTo, flagForce, flagFull, flagSkipFFMpeg, flagOffline, flagConcurrency)
+			}
+
 			fmt.Println()
 			if err != nil {
 				errorsMap[courseId] = err
