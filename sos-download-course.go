@@ -112,7 +112,7 @@ func SosDownloadCourse(courseId, courseDir string, forceLevel int, full bool, co
 		for i, chapter := range courseLectures.Chapters {
 			chapter.Index = i + 1
 			chapterdir := filepath.Join(courseDir, fmt.Sprintf("%d - %s", i+1, cleanName(chapter.Name)))
-			chapterSosDir := filepath.Join(sosPath, sosCleanName(fmt.Sprintf("第%s讲_%s", chapter.Prefix, chapter.Name)))
+			chapterSosDir := filepath.Join(sosPath, fmt.Sprintf("第%s讲_%s", chapter.Prefix, sosCleanName(chapter.Name)))
 
 			for j, lecture := range chapter.Children {
 				lecture.Index = j + 1
@@ -123,7 +123,7 @@ func SosDownloadCourse(courseId, courseDir string, forceLevel int, full bool, co
 						ChapterDir:     chapterdir,
 						Lecture:        lecture,
 						LecturePath:    filepath.Join(chapterdir, fmt.Sprintf("%d-%d %s.mp4", i+1, j+1, cleanName(lecture.Name))),
-						SosLecturePath: filepath.Join(chapterSosDir, sosCleanName(fmt.Sprintf("%s_%s", lecture.Prefix, lecture.Name))),
+						SosLecturePath: filepath.Join(chapterSosDir, fmt.Sprintf("%s_%s", lecture.Prefix, sosCleanName(lecture.Name))),
 					},
 				}
 			}
