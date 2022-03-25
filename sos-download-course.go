@@ -42,8 +42,8 @@ func SosDownloadCourse(courseId, courseDir string, forceLevel int, full bool, co
 	lecturesMetaPath := filepath.Join(metaDir, "lectures.json")
 	//infoMetaPath := filepath.Join(metaDir, "info.json")  // NODOC
 
-	err = exjson.Read(lecturesMetaPath, &courseLectures.Chapters)
-	if err != nil {
+	//err = exjson.Read(lecturesMetaPath, &courseLectures.Chapters)
+	if true { // err != nil {
 		// 利用 sos 路径恢复
 		sosLecturesMetaPath := filepath.Join(sosPath, "lectures.json")
 

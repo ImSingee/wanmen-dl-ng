@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -22,7 +21,7 @@ func sosGetWanmenLectureInfo(sosLectureDir string) (*SosLectureInfo, error) {
 	}
 
 	if len(matches) == 0 {
-		return nil, errors.New("no m3u8 file found")
+		return nil, fmt.Errorf("no m3u8 file found in %s", sosLectureDir)
 	}
 	if len(matches) > 0 {
 		match := matches[0]
