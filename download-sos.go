@@ -100,7 +100,7 @@ var cmdDownloadSos = &cobra.Command{
 	Use: "download-sos",
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, courseId := range args {
-			name, ok := GetName(courseId)
+			name, ok := getSosName(courseId)
 			if !ok {
 				fmt.Println("cannot find course name for", courseId)
 				continue
