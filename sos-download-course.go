@@ -70,8 +70,12 @@ func SosDownloadCourse(courseId, courseDir string, forceLevel int, full bool, co
 			return fmt.Errorf("cannot re-unmarshal lectures meta file %s: %v", sosLecturesMetaPath, err)
 		}
 
-		// save
-		_ = os.WriteFile(lecturesMetaPath, origin, 0644)
+		// save if need
+		_ = os.WriteFile(filepath.Join(metaDir, "lectures.sos.json"), origin, 0644)
+		if !isExist(lecturesMetaPath) {
+			_ = os.WriteFile(lecturesMetaPath, origin, 0644)
+		}
+
 	}
 
 	// NODOC
