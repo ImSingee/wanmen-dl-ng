@@ -22,7 +22,7 @@ var cmdDownloadSosDoc = &cobra.Command{
 func downloadSosDoc(courseIds []string, concurrency, forceLevel int) {
 	wg := sync.WaitGroup{}
 
-	queue := make(chan *DownloadTask)
+	queue := make(chan *DownloadTask, 256)
 
 	wg.Add(1)
 	go func() {
@@ -62,7 +62,8 @@ func downloadSosDoc(courseIds []string, concurrency, forceLevel int) {
 			}
 
 			// 将 meta 写入文件中
-			_ = CopyFile(sosInfoPath, filepath.Join(metaDir, "info.json"))
+			metaInfoPath := filepath.Join(metaDir, "info.json")
+			_ = CopyFile(sosInfoPath, metaInfoPath)
 
 			courseDocuments := courseInfo.Documents
 
@@ -81,6 +82,8 @@ func downloadSosDoc(courseIds []string, concurrency, forceLevel int) {
 				}
 			}
 		}
+
+		close(queue)
 	}()
 
 	if concurrency == 0 {
