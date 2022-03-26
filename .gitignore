@@ -3,3 +3,4 @@ config.json
 names.json
 to_download*
 dist/
+script.go
