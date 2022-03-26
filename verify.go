@@ -28,31 +28,52 @@ var cmdVerify = &cobra.Command{
 			return fmt.Errorf("cannot specify course path and more than one course id")
 		}
 
-		anyError := false
+		totalCount := len(args)
+		errorCount := 0
+		bypassCount := 0
 
 		for _, courseId := range args {
-			ok := verify(courseId, flagCoursePath, flagSkipFFMpeg, flagOffline, flagUpdateMeta)
-			if !ok {
-				anyError = true
+			state := verify(courseId, flagCoursePath, flagSkipFFMpeg, flagOffline, flagUpdateMeta)
+			switch state {
+			case 0: // success
+			case 1: // error
+				errorCount++
 				fmt.Printf("Course ID %s verified fail\n", courseId)
+			case 2:
+				bypassCount++
+				fmt.Printf("Course ID %s bypassed\n", courseId)
 			}
 		}
 
-		if anyError {
-			return fmt.Errorf("some errors occurred")
+		if errorCount == 0 {
+			if bypassCount == 0 {
+				fmt.Printf("All %d courses verified successfully\n", totalCount)
+			} else {
+				fmt.Printf("All %d courses verified successfully, %d courses bypassed\n", totalCount-bypassCount, bypassCount)
+			}
+		} else {
+			if bypassCount == 0 {
+				redPrintf("%d courses verified failed\n", errorCount)
+			} else {
+				redPrintf("%d courses verified failed, %d courses bypassed\n", errorCount, bypassCount)
+			}
 		}
 
 		return nil
 	},
 }
 
-func verify(courseId string, courseDir string, noConvert, offline, updateMeta bool) bool {
+// verify 返回值
+// 0 - 成功
+// 1 - 失败
+// 2 - 忽略
+func verify(courseId string, courseDir string, noConvert, offline, updateMeta bool) int {
 	terminal.Start()
 
 	courseName, ok := GetName(courseId)
 	if !ok {
 		redPrintf("Unknown course id %s, please register first\n", courseId)
-		return false
+		return 1
 	}
 
 	bluePrintf(">>> Verify %s (%s)\n", courseName, courseId)
@@ -68,7 +89,7 @@ func verify(courseId string, courseDir string, noConvert, offline, updateMeta bo
 
 	if !isExist(courseDir) {
 		redPrintf("Course path %s not exist\n", courseDir)
-		return false
+		return 1
 	}
 
 	metaDir := filepath.Join(courseDir, ".meta")
@@ -88,25 +109,25 @@ func verify(courseId string, courseDir string, noConvert, offline, updateMeta bo
 		err = exjson.Read(lecturesMetaPath, &courseLectures.Chapters)
 		if err != nil {
 			redPrintf("Cannot load lectures meta file %s: %v\n", lecturesMetaPath, err)
-			return false
+			return 1
 		}
 
 		err = exjson.Read(infoMetaPath, courseInfo)
 		if err != nil {
 			redPrintf("Cannot load course info meta file %s: %v\n", infoMetaPath, err)
-			return false
+			return 1
 		}
 	} else {
 		courseLectures, err = apiGetWanmenCourseLectures(courseId)
 		if err != nil {
 			redPrintf("Failed to get course lectures: %s\n", err)
-			return false
+			return 1
 		}
 
 		courseInfo, err = apiGetWanmenCourseInfo(courseId)
 		if err != nil {
 			redPrintf("Failed to get course info: %s\n", err)
-			return false
+			return 1
 		}
 
 		if updateMeta { // 更新存储最新的 meta
@@ -206,6 +227,8 @@ func verify(courseId string, courseDir string, noConvert, offline, updateMeta bo
 		if !isExist(donePath) {
 			_ = os.WriteFile(donePath, []byte(time.Now().Format(time.RFC3339)), 0644)
 		}
+
+		return 0
 	} else {
 		// 应该不存在 DONE，存在则删除
 		if isExist(donePath) {
@@ -219,9 +242,13 @@ func verify(courseId string, courseDir string, noConvert, offline, updateMeta bo
 				_ = os.Remove(donePath)
 			}
 		}
-	}
 
-	return pass
+		if isExist(forceDonePath) {
+			return 2
+		} else {
+			return 1
+		}
+	}
 }
 
 func init() {
