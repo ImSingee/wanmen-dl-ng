@@ -196,7 +196,7 @@ func SosDownloadCourse(courseId, courseDir string, forceLevel int, full bool, co
 						updateProgress("doc", workerId, task, a, v)
 					}
 
-					err := downloadDoc(task.Doc.Document, task.Path(), task.MetaPrefix(), f)
+					err := sosDownloadDoc(task.Doc.Document, task.Path(), sosPath, task.MetaPrefix(), f)
 					if err != nil {
 						updateProgress("error", workerId, task, err)
 						continue
