@@ -95,6 +95,9 @@ func sosDownloadLectureM3U8(info *SosLectureInfo, target string, noConvert bool,
 		}
 		defer f.Close()
 
+		// python 生成的 ts 路径
+		pythonTsPrefix := strings.TrimSuffix(info.Path, ".m3u8")
+
 		N := len(tsList)
 
 		baseHost := "https://media.wanmen.org/"
@@ -102,20 +105,42 @@ func sosDownloadLectureM3U8(info *SosLectureInfo, target string, noConvert bool,
 		for i, ts := range tsList {
 			reportProgress("downloading", i, N)
 
-			req, err := http.NewRequest("GET", urljoin(baseHost, ts), nil)
-			if err != nil {
-				return fmt.Errorf("invalid ts %d download request: %w", i, err)
-			}
-			req.Header = getMediaHeaders()
+			pythonTsPath := fmt.Sprintf("%s%d.ts", pythonTsPrefix, i+1)
 
-			response, err := httpRequestWithAutoRetry(req)
-			if err != nil {
-				return fmt.Errorf("cannot download ts %d: %w", i, err)
-			}
+			if isExist(pythonTsPath) {
+				err := func() error {
+					ff, err := os.Open(pythonTsPrefix)
+					if err != nil {
+						return fmt.Errorf("cannot open python ts file: %v", err)
+					}
+					defer ff.Close()
 
-			_, err = io.Copy(f, response.Body)
-			if err != nil {
-				return fmt.Errorf("cannot write ts %d to part file: %w", i, err)
+					_, err = io.Copy(f, ff)
+					if err != nil {
+						return fmt.Errorf("cannot copy from python ts: %v", err)
+					}
+
+					return nil
+				}()
+				if err != nil {
+					return err
+				}
+			} else {
+				req, err := http.NewRequest("GET", urljoin(baseHost, ts), nil)
+				if err != nil {
+					return fmt.Errorf("invalid ts %d download request: %w", i, err)
+				}
+				req.Header = getMediaHeaders()
+
+				response, err := httpRequestWithAutoRetry(req)
+				if err != nil {
+					return fmt.Errorf("cannot download ts %d: %w", i, err)
+				}
+
+				_, err = io.Copy(f, response.Body)
+				if err != nil {
+					return fmt.Errorf("cannot write ts %d to part file: %w", i, err)
+				}
 			}
 		}
 		reportProgress("downloading", N, N)
