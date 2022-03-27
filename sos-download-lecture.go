@@ -109,7 +109,7 @@ func sosDownloadLectureM3U8(info *SosLectureInfo, target string, noConvert bool,
 
 			if isExist(pythonTsPath) {
 				err := func() error {
-					ff, err := os.Open(pythonTsPrefix)
+					ff, err := os.Open(pythonTsPath)
 					if err != nil {
 						return fmt.Errorf("cannot open python ts file: %v", err)
 					}
