@@ -29,7 +29,7 @@ func sosDownloadDoc(docInfo *CourseInfo_Document, saveTo string, sosDir string, 
 	}
 	sosFilePath := filepath.Join(sosDir, pythonFilename)
 	if isExist(sosFilePath) {
-		err = os.Rename(sosFilePath, saveTo)
+		err = CopyFile(sosFilePath, saveTo)
 		if err != nil {
 			return fmt.Errorf("failed to rename from python-downloaded documents file: %w", err)
 		}
