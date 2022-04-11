@@ -49,6 +49,6 @@ func init() {
 	app.AddCommand(cmdVerifyAll)
 
 	cmdVerifyAll.Flags().BoolVarP(&flagSkipFFMpeg, "skip-ffmpeg", "m", false, "")
-	cmdVerifyAll.Flags().BoolVarP(&flagOffline, "offline", "o", false, "offline mode (won't request wanmen api again)")
+	cmdVerifyAll.Flags().BoolVarP(&flagOffline, "offline", "o", true, "offline mode (won't request wanmen api again)")
 	cmdVerifyAll.Flags().BoolVar(&flagUpdateMeta, "update-meta", true, "also update exist meta")
 }
